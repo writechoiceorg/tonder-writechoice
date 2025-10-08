@@ -1,0 +1,167 @@
+---
+title: "Refunds"
+description: "Learn how to process refunds for completed transactions, including full and partial refunds, and understand the refund lifecycle."
+---
+
+## Overview
+
+Refunds allow you to return funds to customers for card transactions. You'll use this when you need to process customer returns, cancellations, or any situation requiring payment reversal. Understanding the refund process is crucial for managing customer relationships and maintaining accurate financial records.
+
+<Note>
+Refunds are only available for card payments. SPEI, OXXO, and Mercado Pago transactions cannot be refunded through the Tonder API.
+</Note>
+
+## When to Issue Refunds
+
+Common scenarios for processing refunds include:
+
+- **Product returns**: Customer returns merchandise within your return policy window
+- **Order cancellations**: Customer cancels before shipment or service delivery
+- **Service disputes**: Issues with service quality or delivery
+- **Duplicate charges**: Accidental double-charging of a customer
+- **Goodwill gestures**: Customer service recovery or compensation
+
+## Refund Types
+
+Tonder supports two types of refunds:
+
+### Full Refund
+
+Returns the complete transaction amount to the customer. This is appropriate when:
+
+- Customer returns all items from an order
+- Order is completely cancelled
+- Service is not provided at all
+
+### Partial Refund
+
+Returns a portion of the original transaction amount. Use this when:
+
+- Customer returns only some items from an order
+- Applying a discount or credit for service issues
+- Refunding shipping costs but keeping product charges
+
+## Refund Limitations
+
+Be aware of these important limitations:
+
+<Warning>
+**Important refund constraints**
+- Refunds work exclusively with credit and debit card transactions
+- Each transaction can only be refunded once (partial or full)
+- Refunds must be processed within 120 days after payment confirmation
+- The refund amount cannot exceed the original transaction amount
+</Warning>
+
+## How Refunds Work
+
+The refund process involves several stages:
+
+### 1. Refund Initiation
+
+You submit a refund request through the Tonder API, specifying:
+
+- The original transaction ID
+- The refund amount (full or partial)
+- The currency (must match the original transaction)
+
+### 2. Processing
+
+Tonder processes the refund request and communicates with the payment provider. The refund is typically approved immediately, but the actual transfer of funds depends on the customer's bank.
+
+### 3. Settlement
+
+The funds are returned to the customer's original payment method. This typically takes:
+
+- **3-5 business days** for credit cards
+- **5-10 business days** for debit cards
+- Timing may vary depending on the card issuer and banking institution
+
+## Refund Statuses
+
+During the refund lifecycle, you'll encounter these statuses:
+
+| Status | Description |
+|--------|-------------|
+| `Success` | Refund has been successfully processed |
+| `Pending` | Refund is being processed |
+| `Failed` | Refund attempt failed |
+| `Rejected` | Refund was rejected by the payment provider |
+
+## Processing a Refund
+
+To process a refund, you'll need:
+
+1. **Original transaction ID**: The unique identifier from the original payment
+2. **Refund amount**: The amount to refund (can be partial or full)
+3. **Currency**: Must match the original transaction currency
+
+<Tip>
+For implementation details and code examples, see the [Refund a Payment](/direct-integration/guides/refund-a-payment) guide in the Direct Integration section.
+</Tip>
+
+## Best Practices
+
+Follow these recommendations when processing refunds:
+
+1. **Keep detailed records**: Maintain logs of all refund requests and their outcomes
+2. **Communicate with customers**: Inform customers when refunds are processed and expected timeframes
+3. **Validate amounts**: Always ensure refund amounts don't exceed the original transaction
+4. **Track refund IDs**: Store the refund transaction ID for reconciliation and customer service
+5. **Monitor refund patterns**: High refund rates may indicate product or service issues
+6. **Set clear policies**: Establish and communicate refund policies to customers
+
+## Common Refund Errors
+
+Understanding common errors helps you handle refunds more effectively:
+
+### Already Refunded
+
+**Error**: Transaction has already been refunded
+
+**Solution**: Check your records before initiating refunds. Each transaction can only be refunded once.
+
+### Invalid Amount
+
+**Error**: Refund amount exceeds original transaction amount
+
+**Solution**: Validate refund amounts against original transaction totals before submitting requests.
+
+### Transaction Not Found
+
+**Error**: Original transaction not found or not refundable
+
+**Solution**: Verify the transaction ID is correct and that the transaction is a completed card payment within the refund window (120 days).
+
+### Refund Window Expired
+
+**Error**: Transaction is too old to be refunded
+
+**Solution**: Process refunds promptly. Transactions older than 120 days cannot be refunded.
+
+## Financial Impact
+
+Understanding how refunds affect your financials:
+
+- **Fees**: Processing fees from the original transaction are typically not refunded
+- **Reserves**: Refunded amounts may be deducted from your available balance
+- **Reporting**: Refunds appear as separate line items in your financial reports
+- **Settlement**: Refunds reduce your net settlement amounts
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Payments" href="/guides/core-concepts/payment-lifecycle/payments">
+    Learn about the payment process
+  </Card>
+  <Card title="Disputes" href="/guides/core-concepts/payment-lifecycle/disputes">
+    Understand chargebacks and how they differ from refunds
+  </Card>
+  <Card title="Finances" href="/guides/core-concepts/finances">
+    Track refunds in your financial overview
+  </Card>
+  <Card title="API Reference" href="/direct-integration/guides/refund-a-payment">
+    View detailed refund API documentation
+  </Card>
+</CardGroup>
+

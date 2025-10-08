@@ -257,6 +257,63 @@
         ]
       },
       {
+        "tab": "Guides",
+        "groups": [
+          {
+            "group": "Introduction",
+            "pages": [
+              "guides/introduction/integration-options",
+              "guides/introduction/security"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              {
+                "group": "Payment Lifecycle",
+                "pages": [
+                  "guides/core-concepts/payment-lifecycle/overview",
+                  "guides/core-concepts/payment-lifecycle/payments",
+                  "guides/core-concepts/payment-lifecycle/3ds-payments",
+                  "guides/core-concepts/payment-lifecycle/refunds",
+                  "guides/core-concepts/payment-lifecycle/disputes"
+                ]
+              },
+              "guides/core-concepts/finances",
+              "guides/core-concepts/testing-data"
+            ]
+          },
+          {
+            "group": "Payment Methods",
+            "pages": [
+              "guides/payment-methods/available-payment-methods",
+              {
+                "group": "Country Coverage",
+                "pages": [
+                  "guides/payment-methods/coverage/coverage",
+                  "guides/payment-methods/coverage/brazil",
+                  "guides/payment-methods/coverage/colombia",
+                  "guides/payment-methods/coverage/costa-rica",
+                  "guides/payment-methods/coverage/ecuador",
+                  "guides/payment-methods/coverage/guatemala",
+                  "guides/payment-methods/coverage/mexico",
+                  "guides/payment-methods/coverage/panama",
+                  "guides/payment-methods/coverage/peru"
+                ]
+              }
+            ]
+          },
+          {
+            "group": "Plugins",
+            "pages": [
+              "guides/plugins/overview",
+              "guides/plugins/magento",
+              "guides/plugins/woo-commerce"
+            ]
+          }
+        ]
+      },
+      {
         "tab": "Dashboard",
         "groups": [
           {

@@ -1,0 +1,109 @@
+---
+title: "3D Secure Payments"
+description: "Learn how 3D Secure 2 (3DS2) adds a crucial layer of security to online card transactions, reducing fraud and enhancing customer trust."
+---
+
+## What is 3D Secure?
+
+**3D Secure (3DS)** is a security protocol that provides an additional layer of verification for online credit and debit card transactions. It's a messaging system that allows customers to authenticate themselves directly with their card issuer during a card-not-present (CNP) purchase. This process helps significantly reduce the risk of fraudulent card use by confirming the cardholder's identity before the transaction is authorized.
+
+<Note>
+  Tonder uses **3D Secure 2 (3DS2)**, the modern version of the protocol, which introduces "frictionless authentication" to improve the payment experience over the original 3DS1.
+</Note>
+
+## How 3DS2 Works
+
+When a customer makes an online purchase, 3DS2 activates an authentication step. This step is designed to confirm that the person making the purchase is the legitimate cardholder.
+
+This verification can occur in two ways: a frictionless flow or a challenge flow.
+
+### Frictionless Flow
+
+In most cases, the authentication happens seamlessly behind the scenes. Tonder's system, along with the card issuer's Access Control Server (ACS), analyses various data points from the customer's device and the purchase details. This risk-based analysis allows the transaction to be authenticated without any action required from the customer, eliminating disruptive pop-ups and improving transaction success rates.
+
+### Challenge Flow
+
+For transactions deemed high-risk (typically 1-2% of all payments), the customer is prompted to provide additional verification. This "challenge" requires the customer to prove their identity using at least two of the following three methods:
+
+* **Something they know**: A password or PIN code.
+* **Something they have**: A physical item like a phone, card, or wearable device.
+* **Something they are**: A biometric identifier like a fingerprint, facial scan, or voice pattern.
+
+This two-factor authentication (2FA) balances efficient processing for low-risk transactions with strong security for those that require extra scrutiny.
+
+<Info>
+  The authentication step could involve entering a password, receiving a one-time PIN via SMS, using biometrics, or answering security questions. If authentication is successful, the payment proceeds; otherwise, it is declined.
+</Info>
+
+## Benefits of 3DS2
+
+Integrating 3DS2 offers several key advantages for your business:
+
+* **Reduced Fraud Rates**: By verifying cardholder identity, 3DS2 significantly lowers the risk of fraudulent transactions and their associated costs.
+* **Advanced Risk Analysis**: Issuers can analyse rich transaction data in real-time to more accurately assess risk, applying challenges only when necessary.
+* **Global Compliance**: The protocol aligns with global security standards, helping you meet regulatory requirements for online payments.
+* **Improved Conversion**: The frictionless flow means most legitimate transactions proceed without customer friction, improving completion rates.
+* **Liability Shift**: When 3DS2 authentication is successful, liability for fraudulent transactions typically shifts from the merchant to the card issuer.
+
+## 3DS2 Transaction Flow
+
+The typical flow for a 3DS2-protected transaction includes:
+
+1. **Customer initiates payment**: The customer enters their card details and confirms the purchase
+2. **Risk assessment**: Data is sent to the card issuer's ACS for risk evaluation
+3. **Authentication decision**: The ACS determines whether to proceed frictionlessly or require a challenge
+4. **Challenge (if needed)**: The customer completes additional authentication
+5. **Authorization**: Once authenticated, the payment is authorized by the issuer
+6. **Confirmation**: The merchant receives the authorization result and completes the transaction
+
+<Frame>
+  ![3D Secure Workflow](/images/core-concepts/3ds-workflow.png)
+</Frame>
+
+## When 3DS2 is Required
+
+While 3DS2 provides enhanced security, it's not always mandatory. However, it's required or recommended in these scenarios:
+
+- **Regulatory requirements**: European Union's PSD2 regulation requires Strong Customer Authentication (SCA) for most online transactions
+- **High-risk transactions**: Large transaction amounts or unusual purchase patterns
+- **First-time customers**: New customers without a purchase history
+- **Merchant preference**: You can configure your account to always use 3DS2 for maximum fraud protection
+
+## Implementing 3DS2 with Tonder
+
+Tonder handles the complexity of 3DS2 authentication for you. When you process a payment that requires 3DS2:
+
+1. **Initial payment request**: Submit your payment request as normal
+2. **Check the response**: If 3DS2 is required, you'll receive a `next_action` object with redirection details
+3. **Redirect the customer**: Direct the customer to the authentication URL
+4. **Handle the callback**: Process the customer's return after authentication
+5. **Complete the payment**: Finalize the transaction based on the authentication result
+
+<Note>
+For detailed implementation guidance, see the [Create a Payment with 3DS](/direct-integration/guides/create-payments/create-a-payment-with-3ds) guide in the Direct Integration section.
+</Note>
+
+## Best Practices
+
+When working with 3DS2, follow these recommendations:
+
+- **Always check for `next_action`**: Don't assume all payments will authorise immediately
+- **Provide clear instructions**: Help customers understand the authentication step
+- **Test thoroughly**: Use test cards that trigger both frictionless and challenge flows
+- **Handle timeouts**: Implement proper timeout handling for authentication redirects
+- **Monitor conversion rates**: Track how 3DS2 affects your checkout completion rates
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Payments" href="/guides/core-concepts/payment-lifecycle/payments">
+    Learn about the standard payment flow
+  </Card>
+  <Card title="Refunds" href="/guides/core-concepts/payment-lifecycle/refunds">
+    Understand how to process refunds for 3DS2 transactions
+  </Card>
+  <Card title="Testing Data" href="/guides/core-concepts/testing-data">
+    Access test cards for 3DS2 scenarios
+  </Card>
+</CardGroup>
+
