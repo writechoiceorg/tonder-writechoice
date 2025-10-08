@@ -1,0 +1,142 @@
+---
+title: "Direct API Overview"
+description: "Complete control with direct API integration"
+---
+
+# Direct API Overview
+
+[Placeholder for Direct API overview]
+
+## What is Direct API Integration?
+
+Direct API integration gives you complete control by letting you build your payment flow from scratch using Tonder's REST API. This approach offers maximum flexibility but requires more development effort and ongoing maintenance.
+
+With Direct API, you make HTTP requests to our endpoints for every payment operation - tokenization, processing, refunds, and more. You build your own UI, handle your own validation, and manage the entire user experience. This is the choice for teams with specific technical requirements that can't be met by SDKs or Hosted Checkout.
+
+## Key Features
+
+Understanding what Direct API integration offers and requires:
+
+- **Complete Control**: Build exactly what you need without any framework constraints
+- **No Dependencies**: Pure REST API - no SDKs or libraries required (but available if desired)
+- **Custom Workflows**: Implement complex business logic and multi-step flows
+- **Full Flexibility**: Total freedom in UI, UX, and integration architecture
+- **Maximum Customization**: Every aspect of the payment experience is in your hands
+
+## Comparison with Other Integration Methods
+
+Choose the integration method that matches your technical requirements and resources:
+
+| Feature | Direct API | SDKs | Hosted Checkout |
+|---------|-----------|------|-----------------|
+| **Implementation Time** | Weeks to Months | Days to Weeks | Hours |
+| **Development Complexity** | High | Medium | Low |
+| **UI Control** | Complete | High | None |
+| **Flexibility** | Maximum | High | Limited |
+| **Code Required** | Extensive | Moderate | Minimal |
+| **PCI Compliance** | Your responsibility | Simplified | Handled by Tonder |
+| **Maintenance** | High | Low | None |
+| **Best For** | Complex custom flows | Standard integrations | Quick launches |
+| **Team Size Needed** | Medium to Large | Small to Medium | Any size |
+
+## Getting Started
+
+Before implementing payment methods, set up your Direct API integration with these fundamental guides:
+
+<CardGroup cols={2}>
+  <Card title="Quick Start" icon="rocket" href="/mock-direct-api/quickstart">
+    Complete your first API integration in 30 minutes
+  </Card>
+  <Card title="Authentication" icon="key" href="/mock-direct-api/authentication">
+    Configure API keys and authentication
+  </Card>
+  <Card title="API Reference" icon="book" href="/reference/overview">
+    Complete endpoint documentation
+  </Card>
+  <Card title="Environments" icon="server" href="/mock-direct-api/environments">
+    Set up testing and production environments
+  </Card>
+</CardGroup>
+
+## Implementation Guides by Payment Method
+
+Each payment method requires specific API calls and workflows. Choose the method you want to implement:
+
+### Card Payments
+
+<Card title="Card Payments via API" icon="credit-card" href="/mock-direct-api/card-payments">
+  Implement card payments
+</Card>
+
+### Alternative Payment Methods
+
+<CardGroup cols={2}>
+  <Card title="OXXO Pay" icon="building" href="/mock-direct-api/oxxo">
+    Implement OXXO payments
+  </Card>
+  <Card title="SPEI" icon="building-columns" href="/mock-direct-api/spei">
+    Implement SPEI transfers
+  </Card>
+  <Card title="Mercado Pago" icon="wallet" href="/mock-direct-api/mercadopago">
+    Implement Mercado Pago
+  </Card>
+  <Card title="More Methods" icon="ellipsis" href="/mock-direct-api/other-methods">
+    See all payment methods
+  </Card>
+</CardGroup>
+
+## Advanced Topics
+
+Once you have basic payment processing working, these features add security, functionality, and production readiness:
+
+<CardGroup cols={2}>
+  <Card title="3D Secure" icon="shield-check" href="/mock-direct-api/3ds">
+    Add strong customer authentication with 3DS 2.0
+  </Card>
+  <Card title="Tokenization" icon="key" href="/mock-direct-api/tokenization">
+    Save cards securely for recurring payments
+  </Card>
+  <Card title="Webhooks" icon="webhook" href="/mock-direct-api/webhooks">
+    Receive real-time payment notifications
+  </Card>
+  <Card title="Error Handling" icon="triangle-exclamation" href="/mock-direct-api/errors">
+    Implement robust error handling
+  </Card>
+</CardGroup>
+
+## When to Use Direct API
+
+Direct API is powerful but requires significant investment. Make sure it's the right choice:
+
+**Perfect for:**
+- Large development teams with API expertise
+- Complex custom requirements that SDKs can't meet
+- Unique business logic or multi-step payment flows
+- Applications requiring complete UI/UX control
+- Microservices architectures needing API-first integration
+- Teams with dedicated backend and security resources
+
+**Not recommended if:**
+- Limited development resources or small teams
+- Need quick implementation or tight deadlines
+- Standard checkout flow meets your needs
+- You don't have expertise in payment security and PCI compliance
+- You want to minimize ongoing maintenance
+
+<Warning>
+  **Important:** Direct API integration makes you responsible for PCI compliance. Card data handling, security, and validation are entirely your responsibility. Consider SDKs or Hosted Checkout if you want Tonder to handle these concerns.
+</Warning>
+
+## Want Faster Implementation?
+
+If Direct API seems too complex for your current needs, these alternatives offer faster integration:
+
+<CardGroup cols={2}>
+  <Card title="SDKs" icon="code" href="/mock-sdks/overview">
+    Pre-built components
+  </Card>
+  <Card title="Hosted Checkout" icon="browser" href="/mock-hosted/overview">
+    Fastest option
+  </Card>
+</CardGroup>
+

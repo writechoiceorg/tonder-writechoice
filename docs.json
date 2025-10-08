@@ -14,244 +14,172 @@
         "tab": "Getting Started",
         "groups": [
           {
+            "group": "Start Here",
+            "pages": [
+              "mock-getting-started/homepage",
+              "mock-getting-started/select-integration",
+              "mock-getting-started/quick-start-guides",
+              "mock-getting-started/payment-methods",
+              "mock-getting-started/dashboard-intro"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Guides",
+        "groups": [
+          {
             "group": "Introduction",
             "pages": [
-              "home",
-              "introduction/getting-started",
-              "introduction/security"
+              "mock-guides/introduction/integration-options",
+              "mock-guides/introduction/security"
             ]
           },
           {
             "group": "Core Concepts",
             "pages": [
-              "core-concepts/payment-lifecycle",
-              "core-concepts/3ds-lifecycle",
-              "core-concepts/environments"
+              {
+                "group": "Payment Lifecycle",
+                "pages": [
+                  "mock-guides/core-concepts/payment-lifecycle-overview",
+                  "mock-guides/core-concepts/payments",
+                  "mock-guides/core-concepts/3ds-payments",
+                  "mock-guides/core-concepts/refunds",
+                  "mock-guides/core-concepts/disputes"
+                ]
+              },
+              "mock-guides/core-concepts/finances",
+              "mock-guides/core-concepts/3ds"
             ]
           }
         ]
       },
       {
-        "tab": "Online Payments",
+        "tab": "SDKs",
         "groups": [
           {
-            "group": "Online Payments",
+            "group": "Overview",
             "pages": [
-              "online-payments/overview",
-              "online-payments/3ds2",
-              "online-payments/finances",
-              "online-payments/disputes"
+              "mock-sdks/overview",
+              "mock-sdks/quickstart"
             ]
           },
           {
-            "group": "Reference",
+            "group": "Web SDK",
             "pages": [
-              "online-payments/payment-methods",
+              "mock-sdks/web/overview",
+              "mock-sdks/web/quickstart",
               {
-                "group": "Coverage",
+                "group": "Full SDK",
                 "pages": [
-                  "online-payments/coverage/coverage",
-                  "online-payments/coverage/brazil",
-                  "online-payments/coverage/colombia",
-                  "online-payments/coverage/costa-rica",
-                  "online-payments/coverage/ecuador",
-                  "online-payments/coverage/guatemala",
-                  "online-payments/coverage/mexico",
-                  "online-payments/coverage/panama",
-                  "online-payments/coverage/peru"
-                ]
-              },
-              "online-payments/test-cards"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "Integrate Tonder",
-        "groups": [
-          {
-            "group": "Integrations",
-            "pages": [
-              "integration/intro",
-              "integration/choose-integration"
-            ]
-          },
-          {
-            "group": "SDKs",
-            "pages": [
-              "integration/sdks/sdk-overview",
-              {
-                "group": "JS SDK",
-                "pages": [
-                  "integration/sdks/web/js-sdk",
+                  "mock-sdks/web/full-sdk/overview",
+                  "mock-sdks/web/full-sdk/quickstart",
                   {
-                    "group": "JS Inline Checkout",
+                    "group": "Payment Methods",
                     "pages": [
-                      "integration/sdks/web/js-inline-checkout",
-                      "integration/sdks/web/js-sdk-styles"
-                    ]
-                  },
-                  "integration/sdks/web/js-lite-checkout",
-                  "integration/sdks/web/code-examples"
-                ]
-              },
-              {
-                "group": "Mobile SDKs",
-                "pages": [
-                  {
-                    "group": "Ionic",
-                    "pages": [
-                      "integration/sdks/mobile/ionic/ionic-sdk-lite",
-                      "integration/sdks/mobile/ionic/ionic-sdk-full"
+                      "mock-sdks/web/full-sdk/card-payments",
+                      "mock-sdks/web/full-sdk/oxxo",
+                      "mock-sdks/web/full-sdk/spei",
+                      "mock-sdks/web/full-sdk/mercadopago",
+                      "mock-sdks/web/full-sdk/other-methods"
                     ]
                   },
                   {
-                    "group": "Flutter",
+                    "group": "Advanced",
                     "pages": [
-                      "integration/sdks/mobile/flutter/flutter-sdk-lite",
-                      "integration/sdks/mobile/flutter/flutter-sdk-full"
-                    ]
-                  },
-                  {
-                    "group": "React Native",
-                    "pages": [
-                      "integration/sdks/mobile/react-native/rn-sdk",
-                      "integration/sdks/mobile/react-native/inline",
-                      "integration/sdks/mobile/react-native/lite",
-                      "integration/sdks/mobile/react-native/enrollment"
-                    ]
-                  }
-                ]
-              },
-              "integration/sdks/secure-token"
-            ]
-          },
-          {
-            "group": "Plugins",
-            "pages": [
-              "integration/plugins/plugins-overview",
-              "integration/plugins/magento",
-              "integration/plugins/woo-commerce"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "Direct Integration",
-        "dropdowns": [
-          {
-            "dropdown": "Documentation",
-            "icon": "book-open",
-            "groups": [
-              {
-                "group": "Introduction",
-                "pages": [
-                  "direct-integration/tonder-direct",
-                  "direct-integration/quickstart",
-                  "direct-integration/process-overview",
-                  "direct-integration/environment",
-                  "direct-integration/authentication",
-                  "direct-integration/http-response-codes",
-                  "direct-integration/testing-data",
-                  "direct-integration/rate-limits"
-                ]
-              },
-              {
-                "group": "Direct Integration Guides",
-                "pages": [
-                  {
-                    "group": "Create Payments",
-                    "pages": [
-                      "direct-integration/guides/create-payments/create-a-payment",
-                      "direct-integration/guides/create-payments/create-a-payment-with-3ds",
-                      "direct-integration/guides/create-payments/create-a-payment-with-a-card-token",
-                      "direct-integration/guides/create-payments/raw-card-processing"
-                    ]
-                  },
-                  "direct-integration/guides/create-a-withdrawal",
-                  "direct-integration/guides/refund-a-payment"
-                ]
-              },
-              {
-                "group": "Webhooks",
-                "pages": [
-                  "direct-integration/webhooks/how-webhooks-works",
-                  "direct-integration/webhooks/setup-and-managing",
-                  "direct-integration/webhooks/delivery-and-retry",
-                  "direct-integration/webhooks/best-practices"
-                ]
-              },
-              {
-                "group": "Reference Pages",
-                "pages": [
-                  {
-                    "group": "Mexican Banking Reference",
-                    "pages": [
-                      "direct-integration/reference/mexican-banking-reference",
-                      "direct-integration/reference/institution-codes",
-                      "direct-integration/reference/clabe-validation",
-                      "direct-integration/reference/clabe-component-extraction"
+                      "mock-sdks/web/full-sdk/styling",
+                      "mock-sdks/web/full-sdk/3ds",
+                      "mock-sdks/web/full-sdk/tokenization",
+                      "mock-sdks/web/full-sdk/errors"
                     ]
                   }
                 ]
               },
               {
-                "group": "Payment Methods",
+                "group": "Light SDK",
                 "pages": [
-                  "direct-integration/payment-methods/payment-methods-overview",
+                  "mock-sdks/web/light-sdk/overview",
+                  "mock-sdks/web/light-sdk/quickstart",
                   {
-                    "group": "Payment Method Guides",
+                    "group": "Payment Methods",
                     "pages": [
-                      "direct-integration/payment-methods/card-payments",
-                      "direct-integration/payment-methods/spei-bank-transfers",
-                      "direct-integration/payment-methods/oxxo-cash-payments",
-                      "direct-integration/payment-methods/mercado-pago-digital-wallet",
-                      "direct-integration/payment-methods/safetypay-cash-payments"
+                      "mock-sdks/web/light-sdk/card-payments",
+                      "mock-sdks/web/light-sdk/oxxo",
+                      "mock-sdks/web/light-sdk/spei",
+                      "mock-sdks/web/light-sdk/mercadopago",
+                      "mock-sdks/web/light-sdk/other-methods"
                     ]
                   },
-                  "direct-integration/payment-methods/payment-methods-reference"
-                ]
-              },
-              {
-                "group": "Resources",
-                "pages": [
-                  "direct-integration/resources/support"
+                  {
+                    "group": "Advanced",
+                    "pages": [
+                      "mock-sdks/web/light-sdk/forms",
+                      "mock-sdks/web/light-sdk/3ds",
+                      "mock-sdks/web/light-sdk/tokenization",
+                      "mock-sdks/web/light-sdk/errors"
+                    ]
+                  }
                 ]
               }
             ]
           },
           {
-            "dropdown": "API Reference",
-            "icon": "square-terminal",
-            "groups": [
-              {
-                "group": "Tonder API",
-                "pages": [
-                  "reference/overview",
-                  "reference/currencies"
-                ]
-              },
-              {
-                "group": "API Reference",
-                "pages": [
-                  "reference/retrieve-business",
-                  "reference/create-client",
-                  "reference/create-order",
-                  "reference/create-payment",
-                  "reference/create-checkout-router",
-                  "reference/create-secure-token",
-                  "reference/refund-payment"
-                ]
-              },
-              {
-                "group": "Direct Integration API",
-                "pages": [
-                  "reference/process-transaction",
-                  "reference/get-transaction-status",
-                  "reference/get-tokenization-token",
-                  "reference/tokenize-card-data"
-                ]
-              }
+            "group": "Mobile SDK",
+            "pages": [
+              "mock-sdks/mobile/overview",
+              "mock-sdks/mobile/quickstart",
+              "mock-sdks/mobile/react-native",
+              "mock-sdks/mobile/flutter",
+              "mock-sdks/mobile/ionic"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Hosted Checkout",
+        "groups": [
+          {
+            "group": "Hosted Checkout",
+            "pages": [
+              "mock-hosted/overview",
+              "mock-hosted/quickstart",
+              "mock-hosted/payment-methods",
+              "mock-hosted/customization",
+              "mock-hosted/webhooks",
+              "mock-hosted/testing"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Direct API",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "mock-direct-api/overview",
+              "mock-direct-api/quickstart",
+              "mock-direct-api/authentication",
+              "mock-direct-api/environments"
+            ]
+          },
+          {
+            "group": "Payment Methods",
+            "pages": [
+              "mock-direct-api/card-payments",
+              "mock-direct-api/oxxo",
+              "mock-direct-api/spei",
+              "mock-direct-api/mercadopago",
+              "mock-direct-api/other-methods"
+            ]
+          },
+          {
+            "group": "Advanced",
+            "pages": [
+              "mock-direct-api/3ds",
+              "mock-direct-api/tokenization",
+              "mock-direct-api/webhooks",
+              "mock-direct-api/errors"
             ]
           }
         ]
@@ -262,42 +190,91 @@
           {
             "group": "Dashboard",
             "pages": [
-              "dashboard/dashboard-overview",
-              "dashboard/home",
-              {
-                "group": "Transactions",
-                "pages": [
-                  "dashboard/transactions",
-                  "dashboard/transaction-details"
-                ]
-              },
-              "dashboard/payment-links",
-              {
-                "group": "Developers",
-                "pages": [
-                  "dashboard/dev-api-keys",
-                  "dashboard/dev-webhooks"
-                ]
-              }
+              "mock-dashboard/overview",
+              "mock-dashboard/guides"
             ]
           },
           {
-            "group": "Online Payments",
+            "group": "Dashboard Sections",
+            "pages": [
+              "mock-dashboard/transactions",
+              "mock-dashboard/analytics",
+              "mock-dashboard/api-keys",
+              "mock-dashboard/webhooks",
+              "mock-dashboard/settlements",
+              "mock-dashboard/disputes"
+            ]
+          },
+          {
+            "group": "How-To Guides",
             "pages": [
               {
-                "group": "Disputes",
+                "group": "Transaction Management",
                 "pages": [
-                  "dashboard/online-payments/disputes",
-                  "dashboard/online-payments/dispute-details"
+                  "mock-dashboard/guide-view-transactions",
+                  "mock-dashboard/guide-refund",
+                  "mock-dashboard/guide-export",
+                  "mock-dashboard/guide-details"
                 ]
               },
               {
-                "group": "Finances",
+                "group": "Financial Management",
                 "pages": [
-                  "dashboard/online-payments/finances",
-                  "dashboard/online-payments/settlement-details"
+                  "mock-dashboard/guide-settlements",
+                  "mock-dashboard/guide-withdrawal",
+                  "mock-dashboard/guide-reports",
+                  "mock-dashboard/guide-reconciliation"
+                ]
+              },
+              {
+                "group": "Dispute Management",
+                "pages": [
+                  "mock-dashboard/guide-disputes",
+                  "mock-dashboard/guide-evidence"
+                ]
+              },
+              {
+                "group": "Configuration",
+                "pages": [
+                  "mock-dashboard/guide-api-keys",
+                  "mock-dashboard/guide-webhooks",
+                  "mock-dashboard/guide-team",
+                  "mock-dashboard/guide-settings"
                 ]
               }
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Tonder API",
+            "pages": [
+              "reference/overview",
+              "reference/currencies"
+            ]
+          },
+          {
+            "group": "API Reference",
+            "pages": [
+              "reference/retrieve-business",
+              "reference/create-client",
+              "reference/create-order",
+              "reference/create-payment",
+              "reference/create-checkout-router",
+              "reference/create-secure-token",
+              "reference/refund-payment"
+            ]
+          },
+          {
+            "group": "Direct Integration API",
+            "pages": [
+              "reference/process-transaction",
+              "reference/get-transaction-status",
+              "reference/get-tokenization-token",
+              "reference/tokenize-card-data"
             ]
           }
         ]

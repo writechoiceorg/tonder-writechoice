@@ -1,0 +1,203 @@
+---
+title: "Light SDK Overview"
+description: "Build your own UI with complete control"
+---
+
+# Light SDK Overview
+
+[Placeholder for Light SDK overview]
+
+## What is the Light SDK?
+
+The Light SDK is a "box of Lego pieces" - no built-in UI, just powerful tools to build your own checkout experience from scratch. This SDK gives you complete freedom to design and implement your payment flow exactly how you want it, without any visual constraints.
+
+Think of it as the building blocks for payments: we handle the complex parts (tokenization, API communication, security), and you handle everything the user sees and interacts with. This is the choice for developers who want maximum control.
+
+**Key Features**: No pre-built UI • Complete design control • Flexible integration • Secure tokenization • Multiple payment methods • 3DS support
+
+### When to Use Light SDK
+
+**Perfect for:**
+- Custom-designed checkout experiences
+- Mobile apps with native UI frameworks
+- Unique user flows that don't match standard forms
+- Teams with dedicated design and frontend resources
+- Embedded payment flows in larger applications
+
+**Not recommended if:**
+- You need to launch quickly (use Full SDK instead)
+- You don't have frontend development expertise
+- Standard payment forms meet your needs
+- You want to minimize development time
+
+<Card title="Light SDK Quick Start" icon="rocket" href="/mock-sdks/web/light-sdk/quickstart">
+  **New to Light SDK?** Start here for installation and basic setup
+</Card>
+
+<Note>
+  **Choosing between Light and Full SDK?**
+  
+  Light SDK requires more development time but gives you complete control. Full SDK is faster but with less UI flexibility.
+  
+  Most teams start with Full SDK and move to Light SDK only if they have specific design requirements that can't be met with customization.
+  
+  [Compare Full SDK vs Light SDK](/mock-sdks/overview#web-sdks)
+</Note>
+
+---
+
+## Choose Your Payment Method
+
+Select the payment method you want to implement. Each guide shows how to use the Light SDK's low-level APIs to build your custom integration. Filter by country to see methods available in your region:
+
+<Tabs>
+  <Tab title="All Methods">
+    <CardGroup cols={2}>
+      <Card title="💳 Card Payments" icon="credit-card" href="/mock-sdks/web/light-sdk/card-payments">
+        **Global**  
+        Credit and debit card processing
+      </Card>
+      <Card title="🏪 OXXO Pay" icon="building" href="/mock-sdks/web/light-sdk/oxxo">
+        **Mexico**  
+        Cash payments at OXXO stores
+      </Card>
+      <Card title="🏦 SPEI" icon="building-columns" href="/mock-sdks/web/light-sdk/spei">
+        **Mexico**  
+        Instant bank transfers
+      </Card>
+      <Card title="💰 Mercado Pago" icon="wallet" href="/mock-sdks/web/light-sdk/mercadopago">
+        **Latin America**  
+        Digital wallet integration
+      </Card>
+      <Card title="💵 SafetyPay" icon="shield" href="/mock-sdks/web/light-sdk/other-methods">
+        **Latin America**  
+        Cash and bank transfer vouchers
+      </Card>
+      <Card title="🇧🇷 PIX" icon="bolt" href="/mock-sdks/web/light-sdk/other-methods">
+        **Brazil**  
+        Instant payment method
+      </Card>
+    </CardGroup>
+    
+    <Card title="View Complete Coverage" icon="globe" href="/mock-getting-started/payment-methods">
+      See all payment methods and coverage by country
+    </Card>
+  </Tab>
+  
+  <Tab title="🇲🇽 Mexico">
+    <CardGroup cols={2}>
+      <Card title="💳 Card Payments" icon="credit-card" href="/mock-sdks/web/light-sdk/card-payments">
+        Credit and debit cards
+      </Card>
+      <Card title="🏪 OXXO Pay" icon="building" href="/mock-sdks/web/light-sdk/oxxo">
+        Cash payments at OXXO stores
+      </Card>
+      <Card title="🏦 SPEI" icon="building-columns" href="/mock-sdks/web/light-sdk/spei">
+        Instant bank transfers
+      </Card>
+      <Card title="💰 Mercado Pago" icon="wallet" href="/mock-sdks/web/light-sdk/mercadopago">
+        Digital wallet
+      </Card>
+    </CardGroup>
+  </Tab>
+  
+  <Tab title="🇧🇷 Brazil">
+    <CardGroup cols={2}>
+      <Card title="💳 Card Payments" icon="credit-card" href="/mock-sdks/web/light-sdk/card-payments">
+        Credit and debit cards
+      </Card>
+      <Card title="🇧🇷 PIX" icon="bolt" href="/mock-sdks/web/light-sdk/other-methods">
+        Instant payment method
+      </Card>
+      <Card title="💰 Mercado Pago" icon="wallet" href="/mock-sdks/web/light-sdk/mercadopago">
+        Digital wallet
+      </Card>
+      <Card title="💵 Boleto Bancário" icon="barcode" href="/mock-sdks/web/light-sdk/other-methods">
+        Bank slip payment
+      </Card>
+    </CardGroup>
+  </Tab>
+  
+  <Tab title="🇨🇴 Colombia">
+    <CardGroup cols={2}>
+      <Card title="💳 Card Payments" icon="credit-card" href="/mock-sdks/web/light-sdk/card-payments">
+        Credit and debit cards
+      </Card>
+      <Card title="🏦 PSE" icon="building-columns" href="/mock-sdks/web/light-sdk/other-methods">
+        Online bank transfer
+      </Card>
+      <Card title="💰 Mercado Pago" icon="wallet" href="/mock-sdks/web/light-sdk/mercadopago">
+        Digital wallet
+      </Card>
+      <Card title="💵 Efecty" icon="money-bill" href="/mock-sdks/web/light-sdk/other-methods">
+        Cash payment network
+      </Card>
+    </CardGroup>
+  </Tab>
+  
+  <Tab title="Other Countries">
+    <Info>
+      Tonder supports payment methods in multiple Latin American countries including Peru, Chile, Ecuador, and more.
+    </Info>
+    
+    <CardGroup cols={2}>
+      <Card title="💳 Card Payments" icon="credit-card" href="/mock-sdks/web/light-sdk/card-payments">
+        Available in all countries
+      </Card>
+      <Card title="💰 Mercado Pago" icon="wallet" href="/mock-sdks/web/light-sdk/mercadopago">
+        Available across Latin America
+      </Card>
+    </CardGroup>
+    
+    <Card title="View Complete Coverage" icon="globe" href="/mock-getting-started/payment-methods">
+      See all supported countries and payment methods
+    </Card>
+  </Tab>
+</Tabs>
+
+---
+
+## Build & Enhance
+
+The Light SDK gives you building blocks - here's how to use them effectively. These guides cover common implementation patterns and advanced features:
+
+<Accordion title="Building Custom Forms">
+  Learn how to create your own payment forms with the Light SDK.
+  
+  <Card title="Forms Guide" icon="window" href="/mock-sdks/web/light-sdk/forms">
+    Build custom payment forms from scratch
+  </Card>
+</Accordion>
+
+<Accordion title="3D Secure Authentication">
+  Add enhanced security with 3D Secure 2.0 for card payments.
+  
+  <Card title="3DS Implementation" icon="shield-check" href="/mock-sdks/web/light-sdk/3ds">
+    Implement 3D Secure authentication
+  </Card>
+</Accordion>
+
+<Accordion title="Save Cards (Tokenization)">
+  Allow customers to save cards securely for future payments.
+  
+  <Card title="Tokenization Guide" icon="key" href="/mock-sdks/web/light-sdk/tokenization">
+    Implement card tokenization
+  </Card>
+</Accordion>
+
+<Accordion title="Error Handling">
+  Handle payment errors gracefully and improve user experience.
+  
+  <Card title="Error Handling Guide" icon="triangle-exclamation" href="/mock-sdks/web/light-sdk/errors">
+    Learn error handling best practices
+  </Card>
+</Accordion>
+
+---
+
+## Need Pre-built UI?
+
+<Card title="Full SDK" icon="window" href="/mock-sdks/web/full-sdk/overview">
+  **Want faster implementation?** The Full SDK provides ready-to-use payment forms with customizable styling.
+</Card>
+
