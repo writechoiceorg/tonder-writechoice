@@ -58,30 +58,100 @@ Before implementing payment methods, set up your Direct API integration with the
   </Card>
 </CardGroup>
 
-## Implementation Guides by Payment Method
+## Quick Access: Implementation Guides by Operation
 
-Each payment method requires specific API calls and workflows. Choose the method you want to implement:
+Navigate quickly to the specific implementation guide you need. Each operation shows which payment methods support it.
 
-### Card Payments
+<Tabs>
+  <Tab title="Create Payment">
+    Start processing payments with your chosen payment method:
 
-<Card title="Card Payments via API" icon="credit-card" href="/mock-direct-api/card-payments">
-  Implement card payments
-</Card>
+    <CardGroup cols={2}>
+      <Card title="Card Payments" icon="credit-card" href="/mock-direct-api/guides/create-payment-card">
+        Process credit and debit card payments with tokenization and 3DS support
+      </Card>
+      <Card title="OXXO Cash" icon="building" href="/mock-direct-api/guides/create-payment-oxxo">
+        Generate payment vouchers for cash payments at OXXO stores
+      </Card>
+      <Card title="SPEI Transfers" icon="building-columns" href="/mock-direct-api/guides/create-payment-spei">
+        Create bank transfer payment instructions for customers
+      </Card>
+      <Card title="Mercado Pago" icon="wallet" href="/mock-direct-api/guides/create-payment-mercadopago">
+        Integrate Mercado Pago digital wallet payments
+      </Card>
+    </CardGroup>
 
-### Alternative Payment Methods
+    <Card title="Multi-Method Payment" icon="layer-group" href="/mock-direct-api/guides/create-multi-method-payment">
+      Accept multiple payment methods in a single integration
+    </Card>
+  </Tab>
+
+  <Tab title="Refund Payment">
+    Process refunds for completed transactions:
+
+    <CardGroup cols={2}>
+      <Card title="Card Payment Refunds" icon="rotate-left" href="/mock-direct-api/guides/refund-card-payment">
+        Full or partial refunds for card transactions
+      </Card>
+    </CardGroup>
+
+    <Info>
+      **Note:** Refunds are only available for card payments. SPEI, OXXO, and Mercado Pago transactions cannot be refunded through the API.
+    </Info>
+  </Tab>
+
+  <Tab title="Check Status">
+    Verify transaction status and get payment details:
+
+    <CardGroup cols={2}>
+      <Card title="Transaction Status" icon="magnifying-glass" href="/mock-direct-api/guides/check-transaction-status">
+        Query current status of any transaction
+      </Card>
+      <Card title="Payment Details" icon="file-invoice" href="/mock-direct-api/guides/get-payment-details">
+        Retrieve complete payment information
+      </Card>
+    </CardGroup>
+  </Tab>
+
+  <Tab title="Advanced Features">
+    Enhance your integration with advanced capabilities:
+
+    <CardGroup cols={2}>
+      <Card title="3D Secure (Cards)" icon="shield-check" href="/mock-direct-api/guides/implement-3ds">
+        Add strong customer authentication with 3DS 2.0
+      </Card>
+      <Card title="Card Tokenization" icon="key" href="/mock-direct-api/guides/tokenize-cards">
+        Save cards securely for recurring payments
+      </Card>
+      <Card title="Webhooks Setup" icon="webhook" href="/mock-direct-api/guides/setup-webhooks">
+        Receive real-time payment notifications
+      </Card>
+      <Card title="Raw Card Processing" icon="credit-card-blank" href="/mock-direct-api/guides/raw-card-processing">
+        PCI-compliant direct card processing (Level 1 only)
+      </Card>
+    </CardGroup>
+  </Tab>
+</Tabs>
+
+## Payment Methods Overview
+
+Explore detailed guides for each payment method to understand requirements, workflows, and best practices:
 
 <CardGroup cols={2}>
+  <Card title="Card Payments" icon="credit-card" href="/mock-direct-api/card-payments">
+    Complete guide for card payment integration
+  </Card>
   <Card title="OXXO Pay" icon="building" href="/mock-direct-api/oxxo">
-    Implement OXXO payments
+    Cash payment implementation at OXXO stores
   </Card>
   <Card title="SPEI" icon="building-columns" href="/mock-direct-api/spei">
-    Implement SPEI transfers
+    Bank transfer payment integration
   </Card>
   <Card title="Mercado Pago" icon="wallet" href="/mock-direct-api/mercadopago">
-    Implement Mercado Pago
+    Digital wallet integration guide
   </Card>
-  <Card title="More Methods" icon="ellipsis" href="/mock-direct-api/other-methods">
-    See all payment methods
+  <Card title="All Methods" icon="ellipsis" href="/mock-direct-api/other-methods">
+    See complete payment methods reference
   </Card>
 </CardGroup>
 

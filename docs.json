@@ -19,7 +19,17 @@
               "mock-getting-started/homepage",
               "mock-getting-started/select-integration",
               "mock-getting-started/quick-start-guides",
-              "mock-getting-started/payment-methods",
+              {
+                "group": "Payment Methods",
+                "pages": [
+                  "mock-getting-started/payment-methods",
+                  "mock-getting-started/payment-methods/cards",
+                  "mock-getting-started/payment-methods/oxxo",
+                  "mock-getting-started/payment-methods/spei",
+                  "mock-getting-started/payment-methods/mercadopago",
+                  "mock-getting-started/payment-methods/safetypay"
+                ]
+              },
               "mock-getting-started/dashboard-intro"
             ]
           }

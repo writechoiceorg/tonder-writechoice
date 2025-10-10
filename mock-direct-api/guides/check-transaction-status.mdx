@@ -1,0 +1,450 @@
+---
+title: "Check Transaction Status"
+sidebarTitle: "Transaction Status"
+description: "Query and verify the current status of any transaction"
+---
+
+# Check Transaction Status
+
+This guide shows you how to check the status of any transaction using Tonder's Direct API. Use this to verify payment completion, track asynchronous payments, or get transaction details.
+
+## Overview
+
+Transaction status checking allows you to query the current state of any payment, refund, or other transaction. This is essential for asynchronous payment methods (OXXO, SPEI, Mercado Pago) and for verifying payment completion.
+
+<Info>
+**When to Check Status:**
+- After 3D Secure authentication completes
+- For asynchronous payment methods (OXXO, SPEI)
+- When customers return from redirect flows
+- To verify webhook notifications
+- For reconciliation and reporting
+</Info>
+
+## Quick Start
+
+Get transaction status with a simple GET request:
+
+```bash cURL
+curl -X GET https://stage.tonder.io/api/v1/transactions/550e8400-e29b-41d4-a716-446655440000/ \
+  -H "Authorization: Token YOUR_API_KEY"
+```
+
+<CodeGroup>
+```python Python
+import requests
+
+transaction_id = "550e8400-e29b-41d4-a716-446655440000"
+url = f"https://stage.tonder.io/api/v1/transactions/{transaction_id}/"
+headers = {"Authorization": "Token YOUR_API_KEY"}
+
+response = requests.get(url, headers=headers)
+transaction = response.json()
+
+print(f"Status: {transaction['status']}")
+print(f"Amount: ${transaction['amount']}")
+```
+
+```javascript JavaScript
+const transactionId = '550e8400-e29b-41d4-a716-446655440000';
+const url = `https://stage.tonder.io/api/v1/transactions/${transactionId}/`;
+
+const response = await fetch(url, {
+  headers: {
+    'Authorization': 'Token YOUR_API_KEY'
+  }
+});
+
+const transaction = await response.json();
+console.log('Status:', transaction.status);
+console.log('Amount:', transaction.amount);
+```
+</CodeGroup>
+
+## Response Structure
+
+A typical status response includes:
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "operation_type": "payment",
+  "status": "success",
+  "amount": 150.00,
+  "currency": "MXN",
+  "payment_method": {
+    "type": "CARD",
+    "last_four": "4242",
+    "brand": "visa"
+  },
+  "customer": {
+    "name": "Ana María Rodríguez",
+    "email": "ana.rodriguez@email.com"
+  },
+  "client_reference": "order-789",
+  "payment_id": 12345,
+  "transaction_id": "txn_abc123",
+  "provider": "stripe",
+  "created_at": "2024-07-26T10:30:00Z",
+  "completed_at": "2024-07-26T10:30:15Z"
+}
+```
+
+### Key Fields
+
+| Field | Description |
+|-------|-------------|
+| `id` | Unique transaction identifier |
+| `status` | Current transaction status |
+| `operation_type` | Type of operation (`payment`, `refund`, etc.) |
+| `amount` | Transaction amount |
+| `currency` | Currency code |
+| `payment_method` | Payment method details |
+| `client_reference` | Your custom reference |
+| `created_at` | When transaction was created |
+| `completed_at` | When transaction completed (if applicable) |
+
+## Understanding Transaction Statuses
+
+Transactions can have various statuses depending on the payment method and state:
+
+### Payment Statuses
+
+| Status | Description | Next Action |
+|--------|-------------|-------------|
+| `pending` | Awaiting customer action | Wait for customer to complete payment |
+| `processing` | Being processed by provider | Wait for final status |
+| `authorized` | Card payment authorized | Capture payment or wait for settlement |
+| `success` | Payment completed successfully | Fulfill order |
+| `paid_full` | Payment fully settled | No action needed |
+| `declined` | Payment declined by provider | Request customer to retry |
+| `failed` | Payment failed to process | Allow customer to retry |
+| `canceled` | Transaction canceled | Create new transaction if needed |
+| `expired` | Payment window expired | Create new transaction |
+
+### Refund Statuses
+
+| Status | Description |
+|--------|-------------|
+| `Success` | Refund processed successfully |
+| `Failed` | Refund failed to process |
+| `Processing` | Refund being processed |
+
+## Payment Method Specific Flows
+
+Different payment methods have different status progression:
+
+<Tabs>
+  <Tab title="Card Payments">
+    **Synchronous Flow:**
+    1. `pending` → `authorized` (immediate)
+    2. `authorized` → `success` (settlement)
+
+    **With 3DS:**
+    1. `pending` (redirect to 3DS)
+    2. `authorized` or `declined` (after authentication)
+    
+    ```bash
+    # Check status after 3DS redirect
+    curl -X GET https://stage.tonder.io/api/v1/transactions/{id}/ \
+      -H "Authorization: Token YOUR_API_KEY"
+    ```
+  </Tab>
+
+  <Tab title="OXXO Payments">
+    **Asynchronous Flow:**
+    1. `pending` (voucher generated)
+    2. `success` (customer paid at store)
+
+    **Timeline:** 24-48 hours after customer pays
+
+    ```bash
+    # Poll status periodically or use webhooks
+    curl -X GET https://stage.tonder.io/api/v1/transactions/{id}/ \
+      -H "Authorization: Token YOUR_API_KEY"
+    ```
+  </Tab>
+
+  <Tab title="SPEI Payments">
+    **Asynchronous Flow:**
+    1. `pending` (CLABE generated)
+    2. `in_transit` (transfer initiated)
+    3. `success` (funds received)
+
+    **Timeline:** Minutes to hours depending on banking hours
+
+    ```bash
+    # Check after customer confirms transfer
+    curl -X GET https://stage.tonder.io/api/v1/transactions/{id}/ \
+      -H "Authorization: Token YOUR_API_KEY"
+    ```
+  </Tab>
+
+  <Tab title="Mercado Pago">
+    **Redirect Flow:**
+    1. `pending` (redirect created)
+    2. `processing` (customer at Mercado Pago)
+    3. `success`, `declined`, or `canceled`
+
+    **Timeline:** Immediate once customer completes
+
+    ```bash
+    # Check when customer returns
+    curl -X GET https://stage.tonder.io/api/v1/transactions/{id}/ \
+      -H "Authorization: Token YOUR_API_KEY"
+    ```
+  </Tab>
+</Tabs>
+
+## Implementation Patterns
+
+### Pattern 1: Webhook-Driven (Recommended)
+
+Use webhooks for real-time status updates, verify with API call:
+
+```python
+def handle_webhook(webhook_data):
+    """Process webhook notification"""
+    transaction_id = webhook_data['data']['id']
+    webhook_status = webhook_data['data']['status']
+    
+    # Verify webhook data with API call
+    verified_transaction = get_transaction_status(transaction_id)
+    
+    if verified_transaction['status'] == 'success':
+        fulfill_order(transaction_id)
+    elif verified_transaction['status'] in ['declined', 'failed']:
+        notify_customer_of_failure(transaction_id)
+
+def get_transaction_status(transaction_id):
+    """Get current transaction status from API"""
+    url = f"https://stage.tonder.io/api/v1/transactions/{transaction_id}/"
+    headers = {"Authorization": "Token YOUR_API_KEY"}
+    
+    response = requests.get(url, headers=headers)
+    return response.json()
+```
+
+### Pattern 2: Polling (For Redirect Returns)
+
+Check status when customer returns from redirect:
+
+```javascript
+async function checkPaymentAfterRedirect() {
+  const transactionId = sessionStorage.getItem('transaction_id');
+  
+  // Check status
+  const transaction = await getTransactionStatus(transactionId);
+  
+  if (transaction.status === 'success') {
+    showSuccessPage(transaction);
+  } else if (transaction.status === 'authorized') {
+    // Card payment authorized but not yet settled
+    showSuccessPage(transaction);
+  } else if (['declined', 'failed', 'canceled'].includes(transaction.status)) {
+    showFailurePage(transaction);
+  } else {
+    // Still pending
+    showPendingPage(transaction);
+  }
+}
+
+async function getTransactionStatus(transactionId) {
+  const response = await fetch(
+    `https://stage.tonder.io/api/v1/transactions/${transactionId}/`,
+    {
+      headers: {
+        'Authorization': 'Token YOUR_API_KEY'
+      }
+    }
+  );
+  
+  return await response.json();
+}
+```
+
+### Pattern 3: Periodic Polling (For Async Payments)
+
+Poll status for asynchronous payment methods:
+
+```python
+import time
+
+def wait_for_payment(transaction_id, timeout=300, interval=10):
+    """
+    Wait for payment completion with timeout
+    
+    Args:
+        transaction_id: Transaction to monitor
+        timeout: Maximum wait time in seconds (default 5 minutes)
+        interval: Check interval in seconds (default 10 seconds)
+    """
+    start_time = time.time()
+    
+    while time.time() - start_time < timeout:
+        transaction = get_transaction_status(transaction_id)
+        
+        if transaction['status'] == 'success':
+            return {"completed": True, "status": "success"}
+        elif transaction['status'] in ['declined', 'failed', 'canceled']:
+            return {"completed": True, "status": transaction['status']}
+        
+        # Still pending, wait before next check
+        time.sleep(interval)
+    
+    return {"completed": False, "status": "timeout"}
+
+# Usage
+result = wait_for_payment("550e8400-e29b-41d4-a716-446655440000")
+if result['completed'] and result['status'] == 'success':
+    fulfill_order()
+```
+
+<Warning>
+**Polling Considerations:**
+- Don't poll too frequently (minimum 5-10 seconds between requests)
+- Implement exponential backoff for longer waits
+- Set reasonable timeouts
+- Use webhooks instead when possible for better efficiency
+</Warning>
+
+## Error Handling
+
+Handle common errors when checking status:
+
+```python
+def get_transaction_status_safely(transaction_id):
+    """Get transaction status with error handling"""
+    url = f"https://stage.tonder.io/api/v1/transactions/{transaction_id}/"
+    headers = {"Authorization": "Token YOUR_API_KEY"}
+    
+    try:
+        response = requests.get(url, headers=headers, timeout=30)
+        
+        if response.status_code == 200:
+            return {"success": True, "data": response.json()}
+        elif response.status_code == 404:
+            return {"success": False, "error": "Transaction not found"}
+        else:
+            return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+    except requests.exceptions.Timeout:
+        return {"success": False, "error": "Request timeout"}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="When to Check Status">
+    **Always check status:**
+    - After 3DS authentication redirects
+    - When customers return from Mercado Pago
+    - Before fulfilling orders
+    - To verify webhook data
+    
+    **Avoid checking status:**
+    - Immediately after creating payment (use webhook instead)
+    - Too frequently (causes unnecessary API calls)
+    - For every page load (cache results appropriately)
+  </Accordion>
+
+  <Accordion title="Caching">
+    - Cache successful/final statuses (no need to re-check)
+    - Don't cache pending statuses
+    - Use appropriate cache TTLs (5-10 minutes for pending)
+    - Invalidate cache on webhook receipt
+  </Accordion>
+
+  <Accordion title="Security">
+    - Always check status server-side, never rely on client data
+    - Validate transaction belongs to the expected order/user
+    - Don't expose API keys in frontend code
+    - Verify transaction amounts match expected values
+  </Accordion>
+</AccordionGroup>
+
+## Complete Example
+
+```python
+class TransactionStatusChecker:
+    def __init__(self, api_key):
+        self.api_key = api_key
+        self.base_url = "https://stage.tonder.io/api/v1"
+        self.cache = {}
+    
+    def get_status(self, transaction_id, use_cache=True):
+        """Get transaction status with caching"""
+        
+        # Check cache first
+        if use_cache and transaction_id in self.cache:
+            cached = self.cache[transaction_id]
+            if self._is_final_status(cached['status']):
+                return cached
+        
+        # Fetch from API
+        url = f"{self.base_url}/transactions/{transaction_id}/"
+        headers = {"Authorization": f"Token {self.api_key}"}
+        
+        try:
+            response = requests.get(url, headers=headers, timeout=30)
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Cache final statuses
+                if self._is_final_status(data['status']):
+                    self.cache[transaction_id] = data
+                
+                return data
+            else:
+                return None
+                
+        except Exception as e:
+            print(f"Error checking status: {e}")
+            return None
+    
+    def _is_final_status(self, status):
+        """Check if status is final (won't change)"""
+        final_statuses = ['success', 'paid_full', 'declined', 'failed', 
+                         'canceled', 'expired']
+        return status in final_statuses
+    
+    def is_successful(self, transaction_id):
+        """Check if transaction was successful"""
+        transaction = self.get_status(transaction_id)
+        return transaction and transaction['status'] in ['success', 'authorized', 'paid_full']
+
+# Usage
+checker = TransactionStatusChecker("YOUR_API_KEY")
+
+if checker.is_successful("550e8400-e29b-41d4-a716-446655440000"):
+    print("Payment successful, fulfill order")
+else:
+    print("Payment not yet completed or failed")
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Setup Webhooks" icon="webhook" href="/mock-direct-api/guides/setup-webhooks">
+    Get real-time status updates
+  </Card>
+  <Card title="Payment Details" icon="file-invoice" href="/mock-direct-api/guides/get-payment-details">
+    Get complete transaction details
+  </Card>
+  <Card title="Create Payment" icon="credit-card" href="/mock-direct-api/guides/create-payment-card">
+    Learn about creating payments
+  </Card>
+  <Card title="API Reference" icon="book" href="/reference/get-transaction-status">
+    Complete API documentation
+  </Card>
+</CardGroup>
+
+## Related Resources
+
+- [Transaction Status API Reference](/reference/get-transaction-status)
+- [Webhooks Guide](/mock-direct-api/guides/setup-webhooks)
+- [Payment Lifecycle](/core-concepts/payment-lifecycle)
+

@@ -1,0 +1,506 @@
+---
+title: "Multi-Method Payment"
+sidebarTitle: "Multi-Method"
+description: "Accept multiple payment methods in a single integration"
+---
+
+# Create Multi-Method Payment Integration
+
+This guide shows you how to build a flexible payment flow that supports multiple payment methods (cards, OXXO, SPEI, Mercado Pago) through a single unified integration.
+
+## Overview
+
+Instead of building separate integrations for each payment method, you can create a unified payment flow that dynamically handles different payment types based on customer selection.
+
+<Info>
+**Benefits of Multi-Method Integration:**
+- Single codebase for all payment methods
+- Consistent user experience across payment types
+- Easy to add new payment methods
+- Reduced maintenance overhead
+- Better conversion rates (more payment options)
+</Info>
+
+## Architecture
+
+A multi-method integration follows this pattern:
+
+<Steps>
+  <Step title="Customer Selects Payment Method">
+    Show available payment methods and collect customer choice
+  </Step>
+  
+  <Step title="Build Payment Request">
+    Construct the appropriate request based on selected method
+  </Step>
+  
+  <Step title="Process Payment">
+    Send to unified `/process/` endpoint
+  </Step>
+  
+  <Step title="Handle Response">
+    Route to appropriate handler based on payment type
+  </Step>
+</Steps>
+
+## Implementation
+
+### Step 1: Payment Method Selection UI
+
+Create a UI that allows customers to choose their preferred payment method:
+
+```html
+<div class="payment-methods">
+  <h3>Selecciona tu método de pago</h3>
+  
+  <div class="payment-option" data-method="card">
+    <img src="/icons/card.svg" alt="Tarjeta" />
+    <span>Tarjeta de crédito o débito</span>
+  </div>
+  
+  <div class="payment-option" data-method="oxxo">
+    <img src="/icons/oxxo.svg" alt="OXXO" />
+    <span>Pago en efectivo OXXO</span>
+  </div>
+  
+  <div class="payment-option" data-method="spei">
+    <img src="/icons/bank.svg" alt="SPEI" />
+    <span>Transferencia bancaria SPEI</span>
+  </div>
+  
+  <div class="payment-option" data-method="mercadopago">
+    <img src="/icons/mercadopago.svg" alt="Mercado Pago" />
+    <span>Mercado Pago</span>
+  </div>
+</div>
+
+<!-- Payment method specific forms -->
+<div id="card-form" class="payment-form hidden">
+  <!-- Card payment fields -->
+</div>
+
+<div id="oxxo-form" class="payment-form hidden">
+  <!-- Customer info only, no extra fields needed -->
+</div>
+
+<div id="spei-form" class="payment-form hidden">
+  <!-- Customer info only -->
+</div>
+
+<div id="mercadopago-form" class="payment-form hidden">
+  <!-- Customer info only -->
+</div>
+```
+
+### Step 2: Payment Request Builder
+
+Create a flexible function that builds the appropriate request:
+
+```javascript
+class PaymentRequestBuilder {
+  constructor(amount, currency, customer, clientReference) {
+    this.baseRequest = {
+      operation_type: 'payment',
+      amount: amount,
+      currency: currency,
+      customer: customer,
+      client_reference: clientReference
+    };
+  }
+
+  forCard(cardData, returnUrl) {
+    return {
+      ...this.baseRequest,
+      payment_method: {
+        type: 'CARD',
+        card_number: cardData.tokenizedNumber,
+        cardholder_name: cardData.tokenizedName,
+        cvv: cardData.tokenizedCVV,
+        expiration_month: cardData.tokenizedMonth,
+        expiration_year: cardData.tokenizedYear
+      },
+      return_url: returnUrl
+    };
+  }
+
+  forOXXO() {
+    return {
+      ...this.baseRequest,
+      payment_method: {
+        type: 'OXXO'
+      }
+    };
+  }
+
+  forSPEI() {
+    return {
+      ...this.baseRequest,
+      payment_method: {
+        type: 'SPEI'
+      }
+    };
+  }
+
+  forMercadoPago(returnUrl) {
+    return {
+      ...this.baseRequest,
+      payment_method: {
+        type: 'mercadopago'
+      },
+      return_url: returnUrl
+    };
+  }
+}
+
+// Usage
+const builder = new PaymentRequestBuilder(
+  250.00,
+  'MXN',
+  { name: 'María García', email: 'maria@example.com' },
+  'order-123'
+);
+
+// Based on selected method
+let paymentRequest;
+if (selectedMethod === 'card') {
+  paymentRequest = builder.forCard(cardData, 'https://yoursite.com/return');
+} else if (selectedMethod === 'oxxo') {
+  paymentRequest = builder.forOXXO();
+} else if (selectedMethod === 'spei') {
+  paymentRequest = builder.forSPEI();
+} else if (selectedMethod === 'mercadopago') {
+  paymentRequest = builder.forMercadoPago('https://yoursite.com/return');
+}
+```
+
+### Step 3: Unified Payment Processor
+
+Process any payment method through the same function:
+
+```python
+class UnifiedPaymentProcessor:
+    def __init__(self, api_key):
+        self.api_key = api_key
+        self.base_url = "https://stage.tonder.io/api/v1"
+    
+    def process_payment(self, payment_request):
+        """Process payment for any payment method"""
+        
+        url = f"{self.base_url}/process/"
+        headers = {
+            "Authorization": f"Token {self.api_key}",
+            "Content-Type": "application/json"
+        }
+        
+        try:
+            response = requests.post(
+                url,
+                headers=headers,
+                json=payment_request,
+                timeout=30
+            )
+            
+            if response.status_code in [200, 201]:
+                result = response.json()
+                return self._handle_response(result)
+            else:
+                return {
+                    "success": False,
+                    "error": response.json()
+                }
+                
+        except Exception as e:
+            return {
+                "success": False,
+                "error": str(e)
+            }
+    
+    def _handle_response(self, response):
+        """Route response to appropriate handler"""
+        
+        payment_type = response.get('payment_method', {}).get('type', 'unknown')
+        
+        if payment_type == 'CARD':
+            return self._handle_card_response(response)
+        elif payment_type == 'OXXO':
+            return self._handle_oxxo_response(response)
+        elif payment_type == 'SPEI':
+            return self._handle_spei_response(response)
+        elif payment_type == 'mercadopago':
+            return self._handle_mercadopago_response(response)
+        else:
+            return {"success": True, "data": response}
+    
+    def _handle_card_response(self, response):
+        """Handle card payment response"""
+        if 'next_action' in response:
+            # 3DS required
+            return {
+                "success": True,
+                "requires_action": True,
+                "action_type": "redirect",
+                "redirect_url": response['next_action']['redirect_to_url']['url'],
+                "transaction_id": response['id']
+            }
+        else:
+            # Direct authorization
+            return {
+                "success": True,
+                "requires_action": False,
+                "status": response['status'],
+                "transaction_id": response['id']
+            }
+    
+    def _handle_oxxo_response(self, response):
+        """Handle OXXO payment response"""
+        return {
+            "success": True,
+            "requires_action": True,
+            "action_type": "display_voucher",
+            "voucher_data": response['payment_instructions'],
+            "voucher_pdf": response.get('voucher_pdf'),
+            "transaction_id": response['id']
+        }
+    
+    def _handle_spei_response(self, response):
+        """Handle SPEI payment response"""
+        return {
+            "success": True,
+            "requires_action": True,
+            "action_type": "display_instructions",
+            "instructions": response['payment_instructions'],
+            "transaction_id": response['id']
+        }
+    
+    def _handle_mercadopago_response(self, response):
+        """Handle Mercado Pago response"""
+        return {
+            "success": True,
+            "requires_action": True,
+            "action_type": "redirect",
+            "redirect_url": response['next_action']['redirect_to_url']['url'],
+            "transaction_id": response['id']
+        }
+```
+
+### Step 4: Response Handler
+
+Create a unified response handler that routes to the appropriate UI:
+
+```javascript
+async function handlePaymentResponse(response) {
+  if (!response.success) {
+    showErrorMessage(response.error);
+    return;
+  }
+
+  // Save transaction ID
+  sessionStorage.setItem('transaction_id', response.transaction_id);
+
+  // Route based on action type
+  switch (response.action_type) {
+    case 'redirect':
+      // Card 3DS or Mercado Pago
+      window.location.href = response.redirect_url;
+      break;
+
+    case 'display_voucher':
+      // OXXO payment
+      displayOXXOVoucher(response.voucher_data, response.voucher_pdf);
+      break;
+
+    case 'display_instructions':
+      // SPEI payment
+      displaySPEIInstructions(response.instructions);
+      break;
+
+    default:
+      // Direct success (card without 3DS)
+      if (response.status === 'authorized' || response.status === 'success') {
+        showSuccessPage(response.transaction_id);
+      } else {
+        showPendingPage(response.transaction_id);
+      }
+  }
+}
+
+function displayOXXOVoucher(voucherData, pdfUrl) {
+  document.getElementById('oxxo-reference').textContent = voucherData.reference_code;
+  document.getElementById('oxxo-amount').textContent = voucherData.amount;
+  document.getElementById('oxxo-expiration').textContent = voucherData.expiration_date;
+  document.getElementById('oxxo-pdf-link').href = pdfUrl;
+  
+  showSection('oxxo-voucher-section');
+}
+
+function displaySPEIInstructions(instructions) {
+  document.getElementById('spei-clabe').textContent = instructions.clabe;
+  document.getElementById('spei-bank').textContent = instructions.bank_name;
+  document.getElementById('spei-amount').textContent = instructions.amount;
+  document.getElementById('spei-reference').textContent = instructions.reference;
+  
+  showSection('spei-instructions-section');
+}
+```
+
+## Complete Example
+
+Here's a complete implementation:
+
+```python
+# Backend API endpoint
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+processor = UnifiedPaymentProcessor("YOUR_API_KEY")
+
+@app.route('/api/payments/create', methods=['POST'])
+def create_payment():
+    """Unified payment creation endpoint"""
+    
+    data = request.json
+    
+    # Build payment request
+    payment_request = {
+        "operation_type": "payment",
+        "amount": data['amount'],
+        "currency": data['currency'],
+        "customer": data['customer'],
+        "client_reference": data['order_id'],
+        "payment_method": data['payment_method']
+    }
+    
+    # Add return URL for redirect methods
+    if data['payment_method']['type'] in ['CARD', 'mercadopago']:
+        payment_request['return_url'] = data.get('return_url')
+    
+    # Process payment
+    result = processor.process_payment(payment_request)
+    
+    return jsonify(result)
+
+# Frontend
+async function processPayment(paymentMethod, formData) {
+  // Build request based on payment method
+  const paymentRequest = {
+    amount: orderTotal,
+    currency: 'MXN',
+    customer: {
+      name: formData.customerName,
+      email: formData.customerEmail
+    },
+    order_id: orderId,
+    payment_method: buildPaymentMethod(paymentMethod, formData),
+    return_url: window.location.origin + '/payment/return'
+  };
+
+  // Send to backend
+  const response = await fetch('/api/payments/create', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(paymentRequest)
+  });
+
+  const result = await response.json();
+  
+  // Handle response
+  await handlePaymentResponse(result);
+}
+
+function buildPaymentMethod(method, formData) {
+  switch (method) {
+    case 'card':
+      return {
+        type: 'CARD',
+        card_number: formData.tokenizedCardNumber,
+        cardholder_name: formData.tokenizedCardholderName,
+        cvv: formData.tokenizedCVV,
+        expiration_month: formData.tokenizedExpMonth,
+        expiration_year: formData.tokenizedExpYear
+      };
+    
+    case 'oxxo':
+      return { type: 'OXXO' };
+    
+    case 'spei':
+      return { type: 'SPEI' };
+    
+    case 'mercadopago':
+      return { type: 'mercadopago' };
+    
+    default:
+      throw new Error('Unknown payment method');
+  }
+}
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="User Experience">
+    - Show all available payment methods clearly
+    - Provide payment method icons and descriptions
+    - Display relevant information per method (e.g., "Funds available in 24-48 hours" for OXXO)
+    - Make the selected method visually distinct
+    - Show appropriate loading states per payment type
+  </Accordion>
+
+  <Accordion title="Code Organization">
+    - Use a factory pattern for building payment requests
+    - Create separate handlers for each payment method response
+    - Implement a router for responses based on payment type
+    - Keep payment method logic modular
+    - Use interfaces/protocols for consistency
+  </Accordion>
+
+  <Accordion title="Error Handling">
+    - Provide payment-method-specific error messages
+    - Handle network failures gracefully
+    - Implement retry logic where appropriate
+    - Log all payment attempts
+    - Show clear next steps on errors
+  </Accordion>
+
+  <Accordion title="Testing">
+    - Test each payment method independently
+    - Test method switching without page reload
+    - Verify proper data isolation between methods
+    - Test error scenarios for each method
+    - Validate redirect flows work correctly
+  </Accordion>
+</AccordionGroup>
+
+## Payment Method Comparison
+
+Help customers choose the right payment method:
+
+| Method | Processing Time | Customer Experience | Best For |
+|--------|----------------|---------------------|----------|
+| **Card** | Immediate | Fastest checkout | Customers with cards |
+| **OXXO** | 24-48 hours | Print/show voucher, pay at store | Cash-preferred customers |
+| **SPEI** | Minutes to hours | Transfer via banking app | Customers who prefer bank transfers |
+| **Mercado Pago** | Immediate | Redirect to Mercado Pago | Existing Mercado Pago users |
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Card Payments" icon="credit-card" href="/mock-direct-api/guides/create-payment-card">
+    Detailed card payment guide
+  </Card>
+  <Card title="OXXO Payments" icon="building" href="/mock-direct-api/guides/create-payment-oxxo">
+    OXXO payment implementation
+  </Card>
+  <Card title="SPEI Payments" icon="building-columns" href="/mock-direct-api/guides/create-payment-spei">
+    SPEI transfer guide
+  </Card>
+  <Card title="Mercado Pago" icon="wallet" href="/mock-direct-api/guides/create-payment-mercadopago">
+    Mercado Pago integration
+  </Card>
+</CardGroup>
+
+## Related Resources
+
+- [Payment Methods Overview](/mock-direct-api/overview)
+- [Testing Multiple Methods](/mock-direct-api/testing)
+- [API Reference](/reference/process-transaction)
+

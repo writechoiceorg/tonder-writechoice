@@ -1,0 +1,436 @@
+---
+title: "Refund Card Payment"
+sidebarTitle: "Refund Payment"
+description: "Process full or partial refunds for card transactions"
+---
+
+# Refund a Card Payment
+
+This guide shows you how to refund card payments using Tonder's Direct API. You can process both full and partial refunds for completed card transactions.
+
+## Overview
+
+Refunds allow you to return funds to customers for card transactions. Use refunds for returns, cancellations, or any situation requiring payment reversal. Refunds are processed through the same unified `/process/` endpoint using `operation_type: "refund"`.
+
+<Warning>
+**Important Limitations:**
+- Refunds are only available for card payments
+- SPEI, OXXO, and Mercado Pago transactions cannot be refunded
+- Each transaction can only be refunded once (partial or full)
+- Refunds must be processed within 120 days after payment confirmation
+</Warning>
+
+## Prerequisites
+
+Before processing a refund, you need:
+
+- The original transaction ID from the payment you want to refund
+- Confirmation that the original payment was successful
+- The original payment amount (for validation)
+
+<Info>
+You can get the transaction ID from the original payment response or by [checking transaction status](/mock-direct-api/guides/check-transaction-status).
+</Info>
+
+## Step 1: Prepare the Refund Request
+
+Create your refund request with the original transaction details:
+
+```json
+{
+  "operation_type": "refund",
+  "amount": 50.00,
+  "currency": "MXN",
+  "original_transaction_id": "550e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+### Required Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `operation_type` | string | Must be `"refund"` |
+| `amount` | decimal | Refund amount (can be partial or full) |
+| `currency` | string | Must match the original transaction currency |
+| `original_transaction_id` | string | ID of the payment to refund |
+
+### Partial vs Full Refunds
+
+```json Full Refund
+{
+  "operation_type": "refund",
+  "amount": 100.00,  // Full original amount
+  "currency": "MXN",
+  "original_transaction_id": "550e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+```json Partial Refund
+{
+  "operation_type": "refund",
+  "amount": 50.00,   // Partial amount (original was $100)
+  "currency": "MXN",
+  "original_transaction_id": "550e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+## Step 2: Send the Refund Request
+
+Make a POST request to the unified payment endpoint:
+
+```bash cURL
+curl -X POST https://stage.tonder.io/api/v1/process/ \
+  -H "Authorization: Token YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "operation_type": "refund",
+    "amount": 50.00,
+    "currency": "MXN",
+    "original_transaction_id": "550e8400-e29b-41d4-a716-446655440000"
+  }'
+```
+
+<CodeGroup>
+```python Python
+import requests
+
+url = "https://stage.tonder.io/api/v1/process/"
+headers = {
+    "Authorization": "Token YOUR_API_KEY",
+    "Content-Type": "application/json"
+}
+
+payload = {
+    "operation_type": "refund",
+    "amount": 50.00,
+    "currency": "MXN",
+    "original_transaction_id": "550e8400-e29b-41d4-a716-446655440000"
+}
+
+response = requests.post(url, headers=headers, json=payload)
+result = response.json()
+
+if result['status'] == 'Success':
+    print(f"Refund successful: {result['id']}")
+    print(f"Refund ID: {result['refund_id']}")
+else:
+    print(f"Refund failed: {result}")
+```
+
+```javascript JavaScript
+const response = await fetch('https://stage.tonder.io/api/v1/process/', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Token YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    operation_type: 'refund',
+    amount: 50.00,
+    currency: 'MXN',
+    original_transaction_id: '550e8400-e29b-41d4-a716-446655440000'
+  })
+});
+
+const data = await response.json();
+
+if (data.status === 'Success') {
+  console.log('Refund successful:', data.id);
+  console.log('Refund ID:', data.refund_id);
+} else {
+  console.error('Refund failed:', data);
+}
+```
+</CodeGroup>
+
+## Step 3: Handle the Response
+
+A successful refund returns the following response:
+
+```json
+{
+  "id": "07230c98-e749-4d27-a90d-6f3e117205aa",
+  "operation_type": "refund",
+  "status": "Success",
+  "amount": 50.0,
+  "currency": "MXN",
+  "transaction_id": "20832559",
+  "provider": "tonder",
+  "created_at": "2025-09-18T15:38:38.157382Z",
+  "status_code": 201,
+  "original_transaction_id": "550e8400-e29b-41d4-a716-446655440000",
+  "refund_id": "74"
+}
+```
+
+### Response Fields
+
+| Field | Description |
+|-------|-------------|
+| `id` | Unique refund transaction identifier |
+| `operation_type` | Will be `"refund"` |
+| `status` | Refund status (`Success`, `Failed`, etc.) |
+| `amount` | Refunded amount |
+| `currency` | Currency code |
+| `original_transaction_id` | ID of the original payment |
+| `refund_id` | Internal refund identifier for tracking |
+| `created_at` | When the refund was created |
+| `status_code` | HTTP status code (201 for success) |
+
+<Warning>
+**Important:** Always validate both the `id` and `status` fields. Store the refund `id` for future reference and reconciliation.
+</Warning>
+
+## Step 4: Notify the Customer
+
+After successfully processing a refund, notify your customer:
+
+```python
+def notify_customer_of_refund(customer_email, refund_amount, refund_id):
+    """Send refund confirmation email to customer"""
+    
+    subject = f"Refund Processed - ${refund_amount}"
+    message = f"""
+    Dear Customer,
+    
+    Your refund of ${refund_amount} has been processed successfully.
+    
+    Refund ID: {refund_id}
+    Amount: ${refund_amount}
+    
+    The funds should appear in your account within 5-10 business days,
+    depending on your card issuer.
+    
+    If you have any questions, please contact our support team.
+    
+    Best regards,
+    Your Store Team
+    """
+    
+    send_email(customer_email, subject, message)
+```
+
+## Error Handling
+
+Handle common refund errors appropriately:
+
+<AccordionGroup>
+  <Accordion title="Already Refunded">
+    **Error:** Transaction has already been refunded
+    
+    ```json
+    {
+      "error": "Invalid request data",
+      "details": "Transaction has already been refunded"
+    }
+    ```
+    
+    **Solution:**
+    - Keep a local record of refunded transactions
+    - Check transaction status before attempting refund
+    - Implement idempotency in your refund logic
+  </Accordion>
+
+  <Accordion title="Invalid Refund Amount">
+    **Error:** Refund amount exceeds original payment
+    
+    ```json
+    {
+      "error": "Invalid request data",
+      "details": "Refund requested amount is greater than original amount"
+    }
+    ```
+    
+    **Solution:**
+    - Validate refund amount against original payment amount
+    - Implement proper amount validation in your application
+    - Display clear error messages to users
+  </Accordion>
+
+  <Accordion title="Transaction Not Found">
+    **Error:** Original transaction not found or not refundable
+    
+    ```json
+    {
+      "error": "Invalid request data",
+      "details": "Original transaction not found or not refundable"
+    }
+    ```
+    
+    **Possible Causes:**
+    - Invalid transaction ID
+    - Attempting to refund non-card payments (SPEI, OXXO, Mercado Pago)
+    - Transaction older than 120 days
+    - Incomplete or failed transactions
+    
+    **Solution:**
+    - Verify the transaction ID is correct
+    - Ensure the transaction is a completed card payment
+    - Check the transaction is within the refund window
+  </Accordion>
+
+  <Accordion title="Network Errors">
+    **Error:** Timeout or connection issues
+    
+    **Solution:**
+    - Implement retry logic with exponential backoff
+    - Use appropriate timeout values (recommended: 30 seconds)
+    - Log all refund attempts for debugging
+    - Handle temporary network failures gracefully
+  </Accordion>
+</AccordionGroup>
+
+## Complete Implementation Example
+
+```python
+import requests
+import time
+
+class RefundProcessor:
+    def __init__(self, api_key):
+        self.api_key = api_key
+        self.base_url = "https://stage.tonder.io/api/v1"
+    
+    def process_refund(self, transaction_id, amount, currency="MXN", max_retries=3):
+        """
+        Process a refund with retry logic and comprehensive error handling
+        """
+        url = f"{self.base_url}/process/"
+        headers = {
+            "Authorization": f"Token {self.api_key}",
+            "Content-Type": "application/json"
+        }
+        
+        payload = {
+            "operation_type": "refund",
+            "amount": amount,
+            "currency": currency,
+            "original_transaction_id": transaction_id
+        }
+        
+        for attempt in range(max_retries):
+            try:
+                response = requests.post(
+                    url,
+                    headers=headers,
+                    json=payload,
+                    timeout=30
+                )
+                
+                if response.status_code == 201:
+                    result = response.json()
+                    
+                    # Log successful refund
+                    self.log_refund(result)
+                    
+                    return {
+                        "success": True,
+                        "refund_id": result['id'],
+                        "amount": result['amount'],
+                        "status": result['status']
+                    }
+                else:
+                    error = response.json()
+                    return {
+                        "success": False,
+                        "error": error.get('details', 'Unknown error')
+                    }
+                    
+            except requests.exceptions.Timeout:
+                if attempt < max_retries - 1:
+                    # Exponential backoff
+                    time.sleep(2 ** attempt)
+                    continue
+                else:
+                    return {
+                        "success": False,
+                        "error": "Request timeout after multiple attempts"
+                    }
+            except Exception as e:
+                return {
+                    "success": False,
+                    "error": str(e)
+                }
+    
+    def log_refund(self, refund_data):
+        """Log refund for audit trail"""
+        print(f"Refund processed: {refund_data['id']}")
+        print(f"Amount: ${refund_data['amount']}")
+        print(f"Original transaction: {refund_data['original_transaction_id']}")
+
+# Usage
+processor = RefundProcessor("YOUR_API_KEY")
+
+# Full refund
+result = processor.process_refund(
+    transaction_id="550e8400-e29b-41d4-a716-446655440000",
+    amount=100.00
+)
+
+if result['success']:
+    print(f"Refund successful: {result['refund_id']}")
+else:
+    print(f"Refund failed: {result['error']}")
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Refund Policy">
+    - Define clear refund policies and communicate them to customers
+    - Set appropriate refund windows (e.g., 30 days for returns)
+    - Implement approval workflows for large refunds
+    - Keep detailed records of all refund requests
+  </Accordion>
+
+  <Accordion title="Technical Implementation">
+    - Always validate refund amounts before processing
+    - Implement idempotency to prevent duplicate refunds
+    - Use webhooks to track refund status changes
+    - Log all refund attempts for audit trails
+    - Handle errors gracefully with user-friendly messages
+  </Accordion>
+
+  <Accordion title="Customer Experience">
+    - Notify customers immediately when refund is processed
+    - Explain expected timeline for funds to appear (5-10 business days)
+    - Provide refund tracking information
+    - Offer customer support for refund inquiries
+  </Accordion>
+</AccordionGroup>
+
+## Refund Timeline
+
+| Stage | Timeframe | Description |
+|-------|-----------|-------------|
+| **API Processing** | Immediate | Tonder API processes the refund request |
+| **Provider Processing** | 1-2 business days | Payment provider processes the refund |
+| **Customer Account** | 5-10 business days | Funds appear in customer's account |
+
+<Info>
+The exact timeline depends on the customer's card issuer. Some banks may process refunds faster than others.
+</Info>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Setup Webhooks" icon="webhook" href="/mock-direct-api/guides/setup-webhooks">
+    Get refund status notifications
+  </Card>
+  <Card title="Check Status" icon="magnifying-glass" href="/mock-direct-api/guides/check-transaction-status">
+    Verify refund status
+  </Card>
+  <Card title="Create Payment" icon="credit-card" href="/mock-direct-api/guides/create-payment-card">
+    Learn about card payments
+  </Card>
+  <Card title="API Reference" icon="book" href="/reference/process-transaction">
+    Complete API documentation
+  </Card>
+</CardGroup>
+
+## Related Resources
+
+- [Refund API Reference](/reference/refund-payment)
+- [Transaction Status Guide](/mock-direct-api/guides/check-transaction-status)
+- [Webhooks Setup](/mock-direct-api/guides/setup-webhooks)
+

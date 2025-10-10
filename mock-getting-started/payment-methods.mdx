@@ -1,62 +1,137 @@
 ---
-title: "Payment Methods & Coverage"
-description: "Available payment methods and geographic coverage"
+title: "Payment Methods Overview"
+description: "Explore available payment methods and choose the right ones for your business"
 ---
 
-# Payment Methods & Coverage
+# Payment Methods Overview
 
-[Placeholder for payment methods overview]
+Tonder supports a wide range of payment methods across Latin America, from traditional card payments to local payment methods preferred by customers in each market.
+
+## How to Use This Guide
+
+1. **Browse Payment Methods** - Learn about each available payment method
+2. **Check Coverage** - Verify availability in your target markets
+3. **Choose Integration** - Select your implementation approach
+4. **Follow Guides** - Implement using method-specific guides for your chosen integration
 
 ## Available Payment Methods
 
-### Card Payments
-- Credit Cards
-- Debit Cards
-- [Other card types]
+Choose a payment method to learn more and find implementation guides:
 
-### Alternative Payment Methods
-- OXXO Pay
-- SPEI
-- Mercado Pago
-- SafetyPay
-- [Other methods]
-
-## Geographic Coverage
-
-<CardGroup cols={3}>
-  <Card title="Mexico" icon="flag" href="/online-payments/coverage/mexico">
-    View Mexico coverage
+<CardGroup cols={2}>
+  <Card title="Card Payments" icon="credit-card" href="/mock-getting-started/payment-methods/cards">
+    Credit and debit cards - Visa, Mastercard, Amex, and more
   </Card>
-  <Card title="Brazil" icon="flag" href="/online-payments/coverage/brazil">
-    View Brazil coverage
+  <Card title="OXXO Pay" icon="building" href="/mock-getting-started/payment-methods/oxxo">
+    Cash payments at OXXO stores across Mexico
   </Card>
-  <Card title="Colombia" icon="flag" href="/online-payments/coverage/colombia">
-    View Colombia coverage
+  <Card title="SPEI Transfers" icon="building-columns" href="/mock-getting-started/payment-methods/spei">
+    Real-time bank transfers in Mexico
   </Card>
-  <Card title="Peru" icon="flag" href="/online-payments/coverage/peru">
-    View Peru coverage
+  <Card title="Mercado Pago" icon="wallet" href="/mock-getting-started/payment-methods/mercadopago">
+    Digital wallet popular across Latin America
   </Card>
-  <Card title="Chile" icon="flag" href="/online-payments/coverage/costa-rica">
-    View Chile coverage
+  <Card title="SafetyPay" icon="shield-check" href="/mock-getting-started/payment-methods/safetypay">
+    Cash and bank transfer payments across LATAM
   </Card>
-  <Card title="More Countries" icon="globe" href="/online-payments/coverage/coverage">
-    View all countries
+  <Card title="All Methods" icon="ellipsis" href="/online-payments/payment-methods">
+    See complete payment methods catalog
   </Card>
 </CardGroup>
 
-## Implementation Guides
+## Payment Method Categories
 
-Once you know which payment methods you need:
+### Card Payments
+Traditional card processing with support for all major card networks. Best for immediate payment confirmation and worldwide acceptance.
+
+**Available in:** All markets  
+**Processing Time:** Immediate  
+**Best For:** E-commerce, subscriptions, recurring payments
+
+### Cash Payments
+Allow customers to pay in cash at convenience stores and payment centers. Popular with unbanked customers.
+
+**Available in:** Mexico, Brazil, Colombia, Peru, Chile  
+**Processing Time:** 24-48 hours  
+**Best For:** Customers without bank accounts, high-trust purchases
+
+### Bank Transfers
+Direct bank-to-bank transfers using local payment rails. Secure and widely trusted.
+
+**Available in:** Mexico (SPEI), Brazil (PIX, TED), Colombia (PSE)  
+**Processing Time:** Minutes to hours  
+**Best For:** Large transactions, B2B payments
+
+### Digital Wallets
+E-wallets and digital payment platforms with high adoption in Latin America.
+
+**Available in:** All markets  
+**Processing Time:** Immediate  
+**Best For:** Users with existing wallet accounts, one-click checkout
+
+## Geographic Coverage
+
+Explore payment methods available in each market:
 
 <CardGroup cols={3}>
-  <Card title="SDK Guides" icon="code" href="/mock-sdks/overview">
-    Implement with SDKs
+  <Card title="Mexico" icon="flag" href="/online-payments/coverage/mexico">
+    Cards, OXXO, SPEI, Mercado Pago
   </Card>
-  <Card title="Hosted Guides" icon="browser" href="/mock-hosted/overview">
-    Implement with Hosted
+  <Card title="Brazil" icon="flag" href="/online-payments/coverage/brazil">
+    Cards, PIX, Boleto, Mercado Pago
   </Card>
-  <Card title="API Guides" icon="terminal" href="/mock-direct-api/overview">
-    Implement with API
+  <Card title="Colombia" icon="flag" href="/online-payments/coverage/colombia">
+    Cards, PSE, Efecty, Mercado Pago
+  </Card>
+  <Card title="Peru" icon="flag" href="/online-payments/coverage/peru">
+    Cards, PagoEfectivo, SafetyPay
+  </Card>
+  <Card title="Chile" icon="flag" href="/online-payments/coverage/chile">
+    Cards, Khipu, Multicaja
+  </Card>
+  <Card title="More Countries" icon="globe" href="/online-payments/coverage/coverage">
+    View all markets
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+Once you've identified the payment methods you need:
+
+<Steps>
+  <Step title="Choose Integration Method">
+    Decide between SDKs, Hosted Checkout, or Direct API based on your technical requirements
+  </Step>
+  
+  <Step title="Review Payment Method Page">
+    Read the detailed guide for each payment method you plan to support
+  </Step>
+  
+  <Step title="Follow Implementation Guides">
+    Use the integration-specific guides linked from each payment method page
+  </Step>
+  
+  <Step title="Test Integration">
+    Test with sandbox credentials before going live
+  </Step>
+</Steps>
+
+## Integration Options
+
+After selecting your payment methods, choose how to integrate:
+
+<CardGroup cols={3}>
+  <Card title="Web SDKs" icon="code" href="/mock-sdks/web/overview">
+    Pre-built UI components for web
+  </Card>
+  <Card title="Mobile SDKs" icon="mobile" href="/mock-sdks/mobile/overview">
+    Native components for iOS/Android
+  </Card>
+  <Card title="Hosted Checkout" icon="browser" href="/mock-hosted/overview">
+    Fully hosted payment page
+  </Card>
+  <Card title="Direct API" icon="terminal" href="/mock-direct-api/overview">
+    Build custom integration
   </Card>
 </CardGroup>
 

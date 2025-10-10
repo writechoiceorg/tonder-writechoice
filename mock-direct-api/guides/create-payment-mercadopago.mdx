@@ -1,0 +1,396 @@
+---
+title: "Create Mercado Pago Payment"
+sidebarTitle: "Mercado Pago Payment"
+description: "Integrate Mercado Pago digital wallet payments with Tonder"
+---
+
+# Create a Mercado Pago Payment
+
+This guide shows you how to process payments through Mercado Pago's digital wallet using Tonder's Direct API. Mercado Pago is one of Latin America's most popular payment platforms, trusted by millions of users.
+
+## Overview
+
+Mercado Pago payments redirect your customers to the Mercado Pago platform where they can pay using their wallet balance, saved cards, or other payment methods available in their Mercado Pago account.
+
+<Info>
+**When to Use Mercado Pago:**
+- Customers with existing Mercado Pago accounts
+- Markets where Mercado Pago has high adoption (Argentina, Brazil, Mexico, Chile, Colombia)
+- Customers who trust the Mercado Pago brand
+- One-click checkout for Mercado Pago users
+- Access to Mercado Pago's financing options
+</Info>
+
+## Step 1: Create the Payment Request
+
+Mercado Pago payments require basic transaction information and a return URL:
+
+```json
+{
+  "operation_type": "payment",
+  "amount": 350.00,
+  "currency": "MXN",
+  "customer": {
+    "name": "Roberto Sánchez García",
+    "email": "roberto.sanchez@email.com"
+  },
+  "payment_method": {
+    "type": "mercadopago"
+  },
+  "client_reference": "order-789",
+  "return_url": "https://yourstore.com/payment/return"
+}
+```
+
+### Required Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `operation_type` | string | Must be `"payment"` |
+| `amount` | decimal | Payment amount |
+| `currency` | string | Currency code (MXN, ARS, BRL, etc.) |
+| `customer` | object | Customer information with `name` and `email` |
+| `payment_method.type` | string | Must be `"mercadopago"` |
+| `client_reference` | string | Your unique transaction identifier |
+| `return_url` | string | URL where customer returns after payment |
+
+<Warning>
+Always include a `return_url` for Mercado Pago payments. This is where customers will be redirected after completing or canceling their payment.
+</Warning>
+
+## Step 2: Send the Request
+
+Make a POST request to initiate the Mercado Pago payment:
+
+```bash cURL
+curl -X POST https://stage.tonder.io/api/v1/process/ \
+  -H "Authorization: Token YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "operation_type": "payment",
+    "amount": 350.00,
+    "currency": "MXN",
+    "customer": {
+      "name": "Roberto Sánchez García",
+      "email": "roberto.sanchez@email.com"
+    },
+    "payment_method": {
+      "type": "mercadopago"
+    },
+    "client_reference": "order-789",
+    "return_url": "https://yourstore.com/payment/return"
+  }'
+```
+
+<CodeGroup>
+```python Python
+import requests
+
+url = "https://stage.tonder.io/api/v1/process/"
+headers = {
+    "Authorization": "Token YOUR_API_KEY",
+    "Content-Type": "application/json"
+}
+
+payload = {
+    "operation_type": "payment",
+    "amount": 350.00,
+    "currency": "MXN",
+    "customer": {
+        "name": "Roberto Sánchez García",
+        "email": "roberto.sanchez@email.com"
+    },
+    "payment_method": {
+        "type": "mercadopago"
+    },
+    "client_reference": "order-789",
+    "return_url": "https://yourstore.com/payment/return"
+}
+
+response = requests.post(url, headers=headers, json=payload)
+result = response.json()
+
+# Redirect customer to Mercado Pago
+redirect_url = result['next_action']['redirect_to_url']['url']
+print(f"Redirect to: {redirect_url}")
+```
+
+```javascript JavaScript
+const response = await fetch('https://stage.tonder.io/api/v1/process/', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Token YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    operation_type: 'payment',
+    amount: 350.00,
+    currency: 'MXN',
+    customer: {
+      name: 'Roberto Sánchez García',
+      email: 'roberto.sanchez@email.com'
+    },
+    payment_method: {
+      type: 'mercadopago'
+    },
+    client_reference: 'order-789',
+    return_url: 'https://yourstore.com/payment/return'
+  })
+});
+
+const data = await response.json();
+
+// Redirect customer to Mercado Pago
+const redirectUrl = data.next_action.redirect_to_url.url;
+window.location.href = redirectUrl;
+```
+</CodeGroup>
+
+## Step 3: Handle the Response
+
+The API returns a pending status with redirect information:
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440002",
+  "operation_type": "payment",
+  "status": "pending",
+  "amount": 350.00,
+  "currency": "MXN",
+  "created_at": "2024-07-26T11:00:00Z",
+  "next_action": {
+    "type": "redirect",
+    "redirect_to_url": {
+      "url": "https://www.mercadopago.com/checkout/v1/redirect?pref_id=123456789",
+      "return_url": "https://yourstore.com/payment/return"
+    }
+  }
+}
+```
+
+### Response Fields
+
+| Field | Description |
+|-------|-------------|
+| `id` | Unique transaction identifier - store for status checking |
+| `status` | Initial status will be `pending` |
+| `next_action.redirect_to_url.url` | Mercado Pago checkout URL |
+| `next_action.redirect_to_url.return_url` | Your return URL |
+
+## Step 4: Redirect Customer to Mercado Pago
+
+Immediately redirect the customer to the Mercado Pago checkout:
+
+<Steps>
+  <Step title="Save Transaction ID">
+    Store the transaction `id` from the response for later status verification
+  </Step>
+  
+  <Step title="Redirect to Mercado Pago">
+    Redirect the customer to the URL in `next_action.redirect_to_url.url`
+  </Step>
+  
+  <Step title="Customer Completes Payment">
+    Customer logs into Mercado Pago and completes payment using their preferred method
+  </Step>
+  
+  <Step title="Customer Returns">
+    After payment (success or failure), customer is redirected to your `return_url`
+  </Step>
+</Steps>
+
+### Redirect Implementation
+
+```javascript
+// After receiving API response
+function redirectToMercadoPago(response) {
+  // Save transaction ID for later verification
+  sessionStorage.setItem('transaction_id', response.id);
+  
+  // Redirect to Mercado Pago
+  window.location.href = response.next_action.redirect_to_url.url;
+}
+```
+
+## Step 5: Handle Customer Return
+
+When the customer returns to your site, check the payment status:
+
+```javascript
+// On your return URL page
+async function handlePaymentReturn() {
+  // Get transaction ID from storage
+  const transactionId = sessionStorage.getItem('transaction_id');
+  
+  // Check payment status
+  const response = await fetch(
+    `https://stage.tonder.io/api/v1/transactions/${transactionId}/`,
+    {
+      headers: {
+        'Authorization': 'Token YOUR_API_KEY'
+      }
+    }
+  );
+  
+  const transaction = await response.json();
+  
+  if (transaction.status === 'success') {
+    // Payment successful
+    showSuccessPage();
+  } else if (transaction.status === 'failed' || transaction.status === 'declined') {
+    // Payment failed
+    showFailurePage();
+  } else {
+    // Still pending
+    showPendingPage();
+  }
+}
+```
+
+## Step 6: Track Payment Status
+
+Mercado Pago payments can have various statuses:
+
+1. **`pending`** - Payment initiated, waiting for customer
+2. **`processing`** - Customer is completing payment
+3. **`success`** - Payment completed successfully
+4. **`failed`** - Payment failed
+5. **`declined`** - Payment was declined
+6. **`canceled`** - Customer canceled the payment
+
+### Using Webhooks (Recommended)
+
+Get real-time notifications about payment status changes:
+
+```json Webhook Payload
+{
+  "event": "payment.status_changed",
+  "data": {
+    "id": "550e8400-e29b-41d4-a716-446655440002",
+    "status": "success",
+    "amount": 350.00,
+    "completed_at": "2024-07-26T11:05:23Z",
+    "mercadopago_payment_id": "12345678900",
+    "payment_method_used": "account_money"
+  }
+}
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="User Experience">
+    - Inform customers they'll be redirected to Mercado Pago
+    - Show a loading screen during redirect
+    - Handle the return URL gracefully (success, failure, and canceled states)
+    - Provide clear next steps after payment
+    - Don't assume immediate payment confirmation
+  </Accordion>
+
+  <Accordion title="Security">
+    - Always verify payment status on your server
+    - Don't trust URL parameters for payment confirmation
+    - Use webhooks for authoritative payment status
+    - Validate the transaction ID matches your records
+    - Implement CSRF protection on return URL
+  </Accordion>
+
+  <Accordion title="Error Handling">
+    - Handle redirect failures gracefully
+    - Implement timeout logic for abandoned payments
+    - Allow customers to retry failed payments
+    - Provide customer support contact for payment issues
+    - Log all payment attempts for debugging
+  </Accordion>
+</AccordionGroup>
+
+## Common Scenarios
+
+| Scenario | Description | Handling |
+|----------|-------------|----------|
+| **Successful Payment** | Customer completes payment | Show confirmation, fulfill order |
+| **Payment Declined** | Mercado Pago declines payment | Allow retry with different method |
+| **Customer Cancellation** | Customer closes Mercado Pago window | Offer to retry or choose different payment method |
+| **Abandoned Payment** | Customer doesn't complete payment | Send reminder email, keep order pending temporarily |
+| **Duplicate Return** | Customer hits back button | Use idempotency to handle gracefully |
+
+## Implementation Example
+
+Complete flow implementation:
+
+```python
+# Backend: Create payment
+def create_mercadopago_payment(order):
+    url = "https://stage.tonder.io/api/v1/process/"
+    headers = {
+        "Authorization": f"Token {API_KEY}",
+        "Content-Type": "application/json"
+    }
+    
+    payload = {
+        "operation_type": "payment",
+        "amount": order.total,
+        "currency": "MXN",
+        "customer": {
+            "name": order.customer_name,
+            "email": order.customer_email
+        },
+        "payment_method": {
+            "type": "mercadopago"
+        },
+        "client_reference": order.id,
+        "return_url": f"https://yourstore.com/orders/{order.id}/payment-return"
+    }
+    
+    response = requests.post(url, headers=headers, json=payload)
+    result = response.json()
+    
+    # Save transaction ID
+    order.transaction_id = result['id']
+    order.save()
+    
+    return result['next_action']['redirect_to_url']['url']
+
+# Backend: Handle return
+def handle_payment_return(request, order_id):
+    order = Order.objects.get(id=order_id)
+    
+    # Check payment status
+    url = f"https://stage.tonder.io/api/v1/transactions/{order.transaction_id}/"
+    headers = {"Authorization": f"Token {API_KEY}"}
+    
+    response = requests.get(url, headers=headers)
+    transaction = response.json()
+    
+    if transaction['status'] == 'success':
+        order.mark_as_paid()
+        return render(request, 'payment_success.html', {'order': order})
+    elif transaction['status'] in ['failed', 'declined', 'canceled']:
+        return render(request, 'payment_failed.html', {'order': order})
+    else:
+        return render(request, 'payment_pending.html', {'order': order})
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Setup Webhooks" icon="webhook" href="/mock-direct-api/guides/setup-webhooks">
+    Get real-time payment updates
+  </Card>
+  <Card title="Check Status" icon="magnifying-glass" href="/mock-direct-api/guides/check-transaction-status">
+    Learn to verify payment status
+  </Card>
+  <Card title="Card Payments" icon="credit-card" href="/mock-direct-api/guides/create-payment-card">
+    Explore direct card payments
+  </Card>
+  <Card title="Testing" icon="flask" href="/mock-direct-api/testing">
+    Test Mercado Pago in sandbox
+  </Card>
+</CardGroup>
+
+## Related Resources
+
+- [Mercado Pago Overview](/mock-direct-api/mercadopago)
+- [Webhooks Guide](/mock-direct-api/webhooks)
+- [API Reference](/reference/process-transaction)
+

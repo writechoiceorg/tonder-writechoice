@@ -1,0 +1,463 @@
+---
+title: "Get Payment Details"
+sidebarTitle: "Payment Details"
+description: "Retrieve complete payment information and transaction history"
+---
+
+# Get Payment Details
+
+This guide shows you how to retrieve comprehensive payment information using Tonder's Direct API. Access full transaction details, payment method information, customer data, and more.
+
+## Overview
+
+The payment details endpoint provides complete information about any transaction, including metadata, payment method details, timestamps, and processing information that may not be included in the basic status check.
+
+<Info>
+This is the same endpoint as checking transaction status, but this guide focuses on understanding and using the complete data returned.
+</Info>
+
+## Get Payment Details
+
+Retrieve full payment information with a GET request:
+
+```bash cURL
+curl -X GET https://stage.tonder.io/api/v1/transactions/550e8400-e29b-41d4-a716-446655440000/ \
+  -H "Authorization: Token YOUR_API_KEY"
+```
+
+<CodeGroup>
+```python Python
+import requests
+
+transaction_id = "550e8400-e29b-41d4-a716-446655440000"
+url = f"https://stage.tonder.io/api/v1/transactions/{transaction_id}/"
+headers = {"Authorization": "Token YOUR_API_KEY"}
+
+response = requests.get(url, headers=headers)
+payment = response.json()
+
+# Access detailed information
+print(f"Payment ID: {payment['id']}")
+print(f"Amount: ${payment['amount']} {payment['currency']}")
+print(f"Status: {payment['status']}")
+print(f"Payment Method: {payment['payment_method']['type']}")
+print(f"Created: {payment['created_at']}")
+```
+
+```javascript JavaScript
+const transactionId = '550e8400-e29b-41d4-a716-446655440000';
+const url = `https://stage.tonder.io/api/v1/transactions/${transactionId}/`;
+
+const response = await fetch(url, {
+  headers: {
+    'Authorization': 'Token YOUR_API_KEY'
+  }
+});
+
+const payment = await response.json();
+
+// Access detailed information
+console.log('Payment ID:', payment.id);
+console.log('Amount:', payment.amount, payment.currency);
+console.log('Status:', payment.status);
+console.log('Payment Method:', payment.payment_method.type);
+console.log('Created:', payment.created_at);
+```
+</CodeGroup>
+
+## Complete Response Structure
+
+A full payment details response includes:
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "operation_type": "payment",
+  "status": "success",
+  "amount": 150.00,
+  "currency": "MXN",
+  "payment_method": {
+    "type": "CARD",
+    "brand": "visa",
+    "last_four": "4242",
+    "exp_month": "12",
+    "exp_year": "2025",
+    "cardholder_name": "Ana María Rodríguez"
+  },
+  "customer": {
+    "name": "Ana María Rodríguez",
+    "email": "ana.rodriguez@email.com",
+    "phone": "+52 55 1234 5678"
+  },
+  "client_reference": "order-789",
+  "payment_id": 12345,
+  "transaction_id": "txn_abc123",
+  "provider": "stripe",
+  "provider_transaction_id": "ch_3Nxyz...",
+  "authorization_code": "123456",
+  "metadata": {
+    "order_type": "online",
+    "shipping_method": "express",
+    "customer_ip": "192.168.1.1"
+  },
+  "created_at": "2024-07-26T10:30:00Z",
+  "completed_at": "2024-07-26T10:30:15Z",
+  "status_code": 201,
+  "three_ds": {
+    "version": "2.0",
+    "status": "authenticated",
+    "eci": "05"
+  }
+}
+```
+
+## Understanding Response Fields
+
+### Basic Transaction Information
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Unique Tonder transaction identifier |
+| `operation_type` | string | Type of operation (`payment`, `refund`, etc.) |
+| `status` | string | Current transaction status |
+| `amount` | decimal | Transaction amount |
+| `currency` | string | Currency code |
+
+### Payment Method Details
+
+The `payment_method` object contains different fields depending on the payment type:
+
+<Tabs>
+  <Tab title="Card Payments">
+    ```json
+    "payment_method": {
+      "type": "CARD",
+      "brand": "visa",           // Card brand
+      "last_four": "4242",       // Last 4 digits
+      "exp_month": "12",         // Expiration month
+      "exp_year": "2025",        // Expiration year
+      "cardholder_name": "..."   // Cardholder name
+    }
+    ```
+  </Tab>
+
+  <Tab title="OXXO Payments">
+    ```json
+    "payment_method": {
+      "type": "OXXO"
+    },
+    "payment_instructions": {
+      "reference_code": "99900012345678",
+      "store_name": "OXXO",
+      "expiration_date": "2024-07-29T23:59:59Z"
+    }
+    ```
+  </Tab>
+
+  <Tab title="SPEI Payments">
+    ```json
+    "payment_method": {
+      "type": "SPEI"
+    },
+    "payment_instructions": {
+      "clabe": "646180157000000004",
+      "bank_name": "STP",
+      "reference": "7812345678"
+    }
+    ```
+  </Tab>
+
+  <Tab title="Mercado Pago">
+    ```json
+    "payment_method": {
+      "type": "mercadopago",
+      "mercadopago_payment_id": "12345678900",
+      "payment_method_used": "account_money"
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Customer Information
+
+```json
+"customer": {
+  "name": "Ana María Rodríguez",
+  "email": "ana.rodriguez@email.com",
+  "phone": "+52 55 1234 5678"
+}
+```
+
+### Provider Information
+
+| Field | Description |
+|-------|-------------|
+| `provider` | Payment provider used (e.g., "stripe", "openpay") |
+| `provider_transaction_id` | Provider's transaction identifier |
+| `authorization_code` | Authorization code from card processor |
+
+### Timestamps
+
+| Field | Description |
+|-------|-------------|
+| `created_at` | When transaction was created |
+| `completed_at` | When transaction completed (null if pending) |
+| `updated_at` | Last update timestamp |
+
+### 3D Secure Information
+
+For card payments that used 3D Secure:
+
+```json
+"three_ds": {
+  "version": "2.0",              // 3DS version used
+  "status": "authenticated",      // Authentication result
+  "eci": "05",                   // Electronic Commerce Indicator
+  "cavv": "AAABCZIhcQAAAABZlyFxAAAAAAA="  // Cardholder authentication value
+}
+```
+
+## Common Use Cases
+
+### Use Case 1: Display Payment Receipt
+
+Create a detailed payment receipt for customers:
+
+```python
+def generate_receipt(transaction_id):
+    """Generate customer receipt from payment details"""
+    
+    payment = get_payment_details(transaction_id)
+    
+    receipt = {
+        "transaction_id": payment['id'],
+        "date": payment['completed_at'],
+        "amount": payment['amount'],
+        "currency": payment['currency'],
+        "payment_method": format_payment_method(payment['payment_method']),
+        "status": payment['status'],
+        "reference": payment['client_reference']
+    }
+    
+    return receipt
+
+def format_payment_method(payment_method):
+    """Format payment method for display"""
+    if payment_method['type'] == 'CARD':
+        return f"{payment_method['brand'].upper()} •••• {payment_method['last_four']}"
+    else:
+        return payment_method['type']
+
+# Usage
+receipt = generate_receipt("550e8400-e29b-41d4-a716-446655440000")
+print(f"Receipt for ${receipt['amount']}")
+print(f"Paid with: {receipt['payment_method']}")
+```
+
+### Use Case 2: Reconciliation
+
+Match transactions with your internal records:
+
+```python
+def reconcile_transaction(transaction_id, order_id):
+    """Reconcile payment with internal order"""
+    
+    payment = get_payment_details(transaction_id)
+    
+    # Verify amounts match
+    order = get_order(order_id)
+    if payment['amount'] != order.total:
+        log_discrepancy(transaction_id, order_id)
+        return False
+    
+    # Verify reference matches
+    if payment['client_reference'] != order_id:
+        log_discrepancy(transaction_id, order_id)
+        return False
+    
+    # Update order with payment details
+    order.payment_provider = payment['provider']
+    order.payment_id = payment['payment_id']
+    order.authorization_code = payment.get('authorization_code')
+    order.completed_at = payment['completed_at']
+    order.save()
+    
+    return True
+```
+
+### Use Case 3: Fraud Detection
+
+Analyze payment details for fraud indicators:
+
+```python
+def check_fraud_indicators(transaction_id):
+    """Check transaction for potential fraud indicators"""
+    
+    payment = get_payment_details(transaction_id)
+    risk_score = 0
+    flags = []
+    
+    # Check for mismatched emails
+    if payment['customer']['email'] != get_order_email(payment['client_reference']):
+        risk_score += 20
+        flags.append("Email mismatch")
+    
+    # Check for high amount card payments without 3DS
+    if (payment['payment_method']['type'] == 'CARD' and 
+        payment['amount'] > 1000 and 
+        'three_ds' not in payment):
+        risk_score += 30
+        flags.append("High amount without 3DS")
+    
+    # Check for recently created cards
+    if payment['payment_method']['type'] == 'CARD':
+        exp_month = int(payment['payment_method']['exp_month'])
+        exp_year = int(payment['payment_method']['exp_year'])
+        if exp_year > 2030:
+            risk_score += 10
+            flags.append("Suspicious expiration date")
+    
+    return {
+        "risk_score": risk_score,
+        "flags": flags,
+        "action": "review" if risk_score > 40 else "approve"
+    }
+```
+
+### Use Case 4: Customer Support
+
+Provide customer support agents with payment information:
+
+```python
+def get_support_info(transaction_id):
+    """Get formatted payment info for customer support"""
+    
+    payment = get_payment_details(transaction_id)
+    
+    support_info = {
+        "Transaction ID": payment['id'],
+        "Status": payment['status'].upper(),
+        "Amount": f"${payment['amount']} {payment['currency']}",
+        "Customer": payment['customer']['name'],
+        "Email": payment['customer']['email'],
+        "Payment Method": payment['payment_method']['type'],
+        "Created": format_datetime(payment['created_at']),
+        "Completed": format_datetime(payment.get('completed_at')),
+        "Provider": payment['provider'],
+        "Order Reference": payment['client_reference']
+    }
+    
+    # Add payment-method specific info
+    if payment['payment_method']['type'] == 'CARD':
+        support_info["Card"] = f"{payment['payment_method']['brand']} •••• {payment['payment_method']['last_four']}"
+        support_info["Auth Code"] = payment.get('authorization_code', 'N/A')
+    
+    return support_info
+```
+
+## Filtering and Listing Transactions
+
+While the endpoint shown retrieves a single transaction, you can also list multiple transactions:
+
+```bash List Recent Transactions
+curl -X GET 'https://stage.tonder.io/api/v1/transactions/?limit=10&status=success' \
+  -H "Authorization: Token YOUR_API_KEY"
+```
+
+### Query Parameters
+
+| Parameter | Description | Example |
+|-----------|-------------|---------|
+| `limit` | Number of results to return | `?limit=50` |
+| `status` | Filter by status | `?status=success` |
+| `created_after` | Filter by creation date | `?created_after=2024-01-01` |
+| `created_before` | Filter by creation date | `?created_before=2024-12-31` |
+| `client_reference` | Filter by your reference | `?client_reference=order-789` |
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Security">
+    - Never expose full payment details to customers
+    - Only show last 4 digits of cards
+    - Mask sensitive customer information
+    - Use server-side API calls, not client-side
+    - Implement proper access controls
+  </Accordion>
+
+  <Accordion title="Performance">
+    - Cache payment details for completed transactions
+    - Don't fetch details on every page load
+    - Use appropriate cache TTLs
+    - Implement efficient database queries for reconciliation
+  </Accordion>
+
+  <Accordion title="Data Usage">
+    - Store relevant details in your database
+    - Don't rely on API for real-time customer-facing data
+    - Use for reconciliation and reporting
+    - Keep audit trails of accessed payment details
+  </Accordion>
+</AccordionGroup>
+
+## Error Handling
+
+```python
+def get_payment_details_safely(transaction_id):
+    """Get payment details with comprehensive error handling"""
+    
+    url = f"https://stage.tonder.io/api/v1/transactions/{transaction_id}/"
+    headers = {"Authorization": "Token YOUR_API_KEY"}
+    
+    try:
+        response = requests.get(url, headers=headers, timeout=30)
+        
+        if response.status_code == 200:
+            return {"success": True, "data": response.json()}
+        elif response.status_code == 404:
+            return {"success": False, "error": "Transaction not found"}
+        elif response.status_code == 401:
+            return {"success": False, "error": "Authentication failed"}
+        else:
+            return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+    except requests.exceptions.Timeout:
+        return {"success": False, "error": "Request timeout"}
+    except requests.exceptions.ConnectionError:
+        return {"success": False, "error": "Connection failed"}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+# Usage
+result = get_payment_details_safely("550e8400-e29b-41d4-a716-446655440000")
+
+if result['success']:
+    payment = result['data']
+    process_payment_details(payment)
+else:
+    log_error(result['error'])
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Check Status" icon="magnifying-glass" href="/mock-direct-api/guides/check-transaction-status">
+    Learn about transaction statuses
+  </Card>
+  <Card title="Setup Webhooks" icon="webhook" href="/mock-direct-api/guides/setup-webhooks">
+    Get real-time updates
+  </Card>
+  <Card title="Refund Payment" icon="rotate-left" href="/mock-direct-api/guides/refund-card-payment">
+    Process refunds
+  </Card>
+  <Card title="API Reference" icon="book" href="/reference/get-transaction-status">
+    Complete API documentation
+  </Card>
+</CardGroup>
+
+## Related Resources
+
+- [Transaction Status API Reference](/reference/get-transaction-status)
+- [Payment Lifecycle](/core-concepts/payment-lifecycle)
+- [Reconciliation Guide](/dashboard/reconciliations)
+

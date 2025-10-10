@@ -1,0 +1,546 @@
+---
+title: "Raw Card Processing"
+sidebarTitle: "Raw Card Processing"
+description: "PCI-compliant direct card processing for Level 1 certified merchants"
+---
+
+# PCI-Compliant Raw Card Processing
+
+This guide shows you how to process raw (non-tokenized) card data using Tonder's Direct API. This approach is only available for merchants with full PCI DSS Level 1 compliance and requires significant security infrastructure.
+
+<Warning>
+**PCI DSS Level 1 Compliance Required**
+
+Raw card processing makes you fully responsible for card data security and PCI compliance. Only proceed if your organization has:
+- Current PCI DSS Level 1 compliance certification
+- Dedicated security infrastructure and team
+- Annual PCI compliance audits
+- Proper card data encryption and key management
+- Comprehensive security monitoring and logging
+
+For most merchants, [tokenized processing](/mock-direct-api/guides/tokenize-cards) is the recommended approach.
+</Warning>
+
+## Overview
+
+Raw card processing allows you to send unencrypted card data directly to Tonder's API, bypassing the tokenization step. This reduces API calls and latency but significantly increases your security and compliance responsibilities.
+
+## When to Use Raw Card Processing
+
+**Consider raw card processing only if:**
+- You have active PCI DSS Level 1 certification
+- You need to minimize API latency (single-step processing)
+- You have existing PCI-compliant infrastructure
+- Your team has deep payment security expertise
+- You require complete control over card data handling
+
+**Do NOT use if:**
+- You don't have PCI Level 1 certification
+- Limited security resources or expertise
+- Small to medium transaction volumes
+- Want to minimize compliance overhead
+
+## PCI DSS Level 1 Requirements
+
+Before implementing raw card processing, ensure you meet these requirements:
+
+<AccordionGroup>
+  <Accordion title="Infrastructure Requirements">
+    - Dedicated secure server environment
+    - Network segmentation and isolation
+    - TLS 1.2+ for all card data transmission
+    - Encrypted database storage
+    - Secure key management system (HSM recommended)
+    - Regular vulnerability scanning
+    - Intrusion detection systems
+  </Accordion>
+
+  <Accordion title="Operational Requirements">
+    - Annual on-site PCI DSS audit by QSA
+    - Quarterly network scans by ASV
+    - Documented security policies and procedures
+    - Security awareness training for all staff
+    - Incident response plan
+    - Regular penetration testing
+  </Accordion>
+
+  <Accordion title="Data Handling Requirements">
+    - Never log card numbers, CVV, or full track data
+    - Encrypt card data at rest using strong cryptography
+    - Mask card numbers in all displays (show last 4 only)
+    - Never store CVV data after authorization
+    - Implement strong access controls
+    - Maintain comprehensive audit logs
+  </Accordion>
+</AccordionGroup>
+
+## Implementation
+
+### Step 1: Prepare Raw Card Request
+
+Send card data directly without tokenization:
+
+```json
+{
+  "operation_type": "payment",
+  "amount": 150.00,
+  "currency": "MXN",
+  "customer": {
+    "name": "Ana María Rodríguez",
+    "email": "ana.rodriguez@email.com"
+  },
+  "payment_method": {
+    "type": "CARD",
+    "card_number": "4242424242424242",      // Raw card number
+    "cardholder_name": "ANA MARIA RODRIGUEZ", // Raw name
+    "cvv": "123",                            // Raw CVV
+    "expiration_month": "12",                // Raw month
+    "expiration_year": "2025"                // Raw year
+  },
+  "client_reference": "order-789",
+  "return_url": "https://yourstore.com/payment/return"
+}
+```
+
+<Warning>
+**Critical Security Requirements:**
+- Use TLS 1.2 or higher
+- Never log this request payload
+- Encrypt data in memory if stored temporarily
+- Clear sensitive data from memory immediately after use
+</Warning>
+
+### Step 2: Send Secure Request
+
+Process payment with raw card data:
+
+```bash cURL
+curl -X POST https://stage.tonder.io/api/v1/process/ \
+  -H "Authorization: Token YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "operation_type": "payment",
+    "amount": 150.00,
+    "currency": "MXN",
+    "customer": {
+      "name": "Ana María Rodríguez",
+      "email": "ana.rodriguez@email.com"
+    },
+    "payment_method": {
+      "type": "CARD",
+      "card_number": "4242424242424242",
+      "cardholder_name": "ANA MARIA RODRIGUEZ",
+      "cvv": "123",
+      "expiration_month": "12",
+      "expiration_year": "2025"
+    },
+    "client_reference": "order-789",
+    "return_url": "https://yourstore.com/payment/return"
+  }'
+```
+
+### Step 3: Implement Secure Card Collection
+
+Create a PCI-compliant form:
+
+```python
+from flask import Flask, request, jsonify
+import requests
+import re
+import logging
+
+app = Flask(__name__)
+
+# Configure secure logging (NEVER log card data)
+logger = logging.getLogger('payments')
+logger.setLevel(logging.INFO)
+
+@app.route('/api/payments/process', methods=['POST'])
+def process_payment():
+    """Process payment with raw card data"""
+    
+    try:
+        data = request.json
+        
+        # Validate card data (NEVER log validation failures with card numbers)
+        validation_error = validate_card_data(data['card'])
+        if validation_error:
+            logger.warning(f"Card validation failed for order {data['order_id']}")
+            return jsonify({"error": validation_error}), 400
+        
+        # Build payment request
+        payment_request = {
+            "operation_type": "payment",
+            "amount": data['amount'],
+            "currency": data['currency'],
+            "customer": data['customer'],
+            "payment_method": {
+                "type": "CARD",
+                "card_number": data['card']['number'],
+                "cardholder_name": data['card']['name'],
+                "cvv": data['card']['cvv'],
+                "expiration_month": data['card']['exp_month'],
+                "expiration_year": data['card']['exp_year']
+            },
+            "client_reference": data['order_id'],
+            "return_url": data['return_url']
+        }
+        
+        # Log transaction attempt (without card data)
+        logger.info(f"Processing payment for order {data['order_id']}")
+        
+        # Send to Tonder API over TLS
+        response = requests.post(
+            "https://stage.tonder.io/api/v1/process/",
+            headers={
+                "Authorization": f"Token {API_KEY}",
+                "Content-Type": "application/json"
+            },
+            json=payment_request,
+            timeout=30,
+            verify=True  # Verify SSL certificate
+        )
+        
+        result = response.json()
+        
+        # Clear sensitive data from memory
+        del payment_request
+        del data
+        
+        # Log result (without sensitive data)
+        logger.info(f"Payment processed: {result['id']}, status: {result['status']}")
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        # NEVER log exception details that might contain card data
+        logger.error(f"Payment processing error for order {data.get('order_id', 'unknown')}")
+        return jsonify({"error": "Payment processing failed"}), 500
+
+def validate_card_data(card):
+    """Validate card data (without logging sensitive info)"""
+    
+    # Validate card number (Luhn algorithm)
+    if not is_valid_luhn(card['number']):
+        return "Invalid card number"
+    
+    # Validate expiration
+    exp_month = int(card['exp_month'])
+    exp_year = int(card['exp_year'])
+    
+    if exp_month < 1 or exp_month > 12:
+        return "Invalid expiration month"
+    
+    if exp_year < 2024 or exp_year > 2050:
+        return "Invalid expiration year"
+    
+    # Validate CVV
+    if not re.match(r'^\d{3,4}$', card['cvv']):
+        return "Invalid CVV"
+    
+    # Validate cardholder name
+    if len(card['name']) < 2:
+        return "Invalid cardholder name"
+    
+    return None
+
+def is_valid_luhn(card_number):
+    """Validate card number using Luhn algorithm"""
+    card_number = re.sub(r'\D', '', card_number)
+    
+    def luhn_checksum(card_num):
+        def digits_of(n):
+            return [int(d) for d in str(n)]
+        digits = digits_of(card_num)
+        odd_digits = digits[-1::-2]
+        even_digits = digits[-2::-2]
+        checksum = sum(odd_digits)
+        for d in even_digits:
+            checksum += sum(digits_of(d * 2))
+        return checksum % 10
+    
+    return luhn_checksum(card_number) == 0
+
+if __name__ == '__main__':
+    # Use production-grade WSGI server, not Flask dev server
+    app.run(ssl_context='adhoc')  # Use proper SSL in production
+```
+
+<CodeGroup>
+```javascript JavaScript (Secure Implementation)
+const express = require('express');
+const https = require('https');
+const crypto = require('crypto');
+
+const app = express();
+app.use(express.json());
+
+// Secure logging - NEVER log card data
+const logger = {
+  info: (msg) => console.log(`[INFO] ${new Date().toISOString()} - ${msg}`),
+  error: (msg) => console.error(`[ERROR] ${new Date().toISOString()} - ${msg}`)
+};
+
+app.post('/api/payments/process', async (req, res) => {
+  try {
+    const { card, amount, currency, customer, order_id, return_url } = req.body;
+    
+    // Validate card data
+    const validationError = validateCardData(card);
+    if (validationError) {
+      logger.info(`Card validation failed for order ${order_id}`);
+      return res.status(400).json({ error: validationError });
+    }
+    
+    // Build request
+    const paymentRequest = {
+      operation_type: 'payment',
+      amount,
+      currency,
+      customer,
+      payment_method: {
+        type: 'CARD',
+        card_number: card.number,
+        cardholder_name: card.name,
+        cvv: card.cvv,
+        expiration_month: card.exp_month,
+        expiration_year: card.exp_year
+      },
+      client_reference: order_id,
+      return_url
+    };
+    
+    // Log attempt (no card data)
+    logger.info(`Processing payment for order ${order_id}`);
+    
+    // Send to Tonder API
+    const response = await fetch('https://stage.tonder.io/api/v1/process/', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Token ${process.env.API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(paymentRequest)
+    });
+    
+    const result = await response.json();
+    
+    // Clear sensitive data
+    paymentRequest.payment_method = null;
+    
+    // Log result (no card data)
+    logger.info(`Payment processed: ${result.id}, status: ${result.status}`);
+    
+    res.json(result);
+    
+  } catch (error) {
+    // NEVER log error details that might contain card data
+    logger.error(`Payment processing error`);
+    res.status(500).json({ error: 'Payment processing failed' });
+  }
+});
+
+function validateCardData(card) {
+  // Validate using Luhn algorithm
+  if (!isValidLuhn(card.number)) {
+    return 'Invalid card number';
+  }
+  
+  // Validate expiration
+  const month = parseInt(card.exp_month);
+  const year = parseInt(card.exp_year);
+  
+  if (month < 1 || month > 12) {
+    return 'Invalid expiration month';
+  }
+  
+  if (year < 2024 || year > 2050) {
+    return 'Invalid expiration year';
+  }
+  
+  // Validate CVV
+  if (!/^\d{3,4}$/.test(card.cvv)) {
+    return 'Invalid CVV';
+  }
+  
+  return null;
+}
+
+function isValidLuhn(cardNumber) {
+  const digits = cardNumber.replace(/\D/g, '');
+  let sum = 0;
+  let isEven = false;
+  
+  for (let i = digits.length - 1; i >= 0; i--) {
+    let digit = parseInt(digits[i]);
+    
+    if (isEven) {
+      digit *= 2;
+      if (digit > 9) {
+        digit -= 9;
+      }
+    }
+    
+    sum += digit;
+    isEven = !isEven;
+  }
+  
+  return sum % 10 === 0;
+}
+
+// Use HTTPS in production
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  logger.info(`Secure payment server running on port ${port}`);
+});
+```
+</CodeGroup>
+
+## Tokenized vs Raw Card Processing Comparison
+
+| Aspect | Raw Card Processing | Tokenized Processing |
+|--------|---------------------|---------------------|
+| **API Calls** | 1 (direct process) | 3 (auth → tokenize → process) |
+| **PCI Compliance** | Full Level 1 required | Not required for merchant |
+| **Latency** | Lower (single call) | Higher (multiple calls) |
+| **Security Responsibility** | Entirely merchant's | Handled by Tonder/Skyflow |
+| **Infrastructure Cost** | High (secure infrastructure) | Low |
+| **Audit Requirements** | Annual PCI audits required | Minimal |
+| **Recurring Payments** | Prohibited (can't store raw data) | Supported (store tokens) |
+| **Recommended For** | Large enterprises with PCI Level 1 | All other merchants |
+
+## Security Checklist
+
+Before going live with raw card processing:
+
+- [ ] Current PCI DSS Level 1 compliance certification
+- [ ] TLS 1.2+ for all card data transmission
+- [ ] Encrypted database storage with proper key management
+- [ ] No logging of card numbers, CVV, or track data
+- [ ] Card data masked in all user interfaces
+- [ ] CVV not stored after authorization
+- [ ] Network segmentation and firewalls configured
+- [ ] Intrusion detection system active
+- [ ] Regular vulnerability scans scheduled
+- [ ] Incident response plan documented and tested
+- [ ] Staff security training completed
+- [ ] Third-party security audit passed
+- [ ] Quarterly ASV scans passing
+- [ ] Annual QSA audit scheduled
+
+## Prohibited Practices
+
+<Warning>
+**NEVER do these:**
+- Store CVV/CVC data after authorization
+- Log full card numbers in any system
+- Store unencrypted card data
+- Send card data over unencrypted connections
+- Display full card numbers on screens
+- Email card data (even to customers)
+- Store card data without proper encryption
+- Use weak encryption algorithms
+- Fail to implement access controls
+- Skip security patches and updates
+</Warning>
+
+## Monitoring and Compliance
+
+Implement comprehensive monitoring:
+
+```python
+import logging
+from datetime import datetime
+
+# Secure audit logging (no PCI data)
+audit_logger = logging.getLogger('audit')
+
+def log_payment_attempt(order_id, amount, success, response_code):
+    """Log payment attempt for compliance auditing"""
+    audit_logger.info({
+        "timestamp": datetime.now().isoformat(),
+        "event": "payment_attempt",
+        "order_id": order_id,
+        "amount": amount,
+        "success": success,
+        "response_code": response_code,
+        "ip_address": request.remote_addr,
+        "user_agent": request.headers.get('User-Agent')
+    })
+
+def log_card_data_access(user_id, action, resource):
+    """Log access to systems handling card data"""
+    audit_logger.info({
+        "timestamp": datetime.now().isoformat(),
+        "event": "card_data_access",
+        "user_id": user_id,
+        "action": action,
+        "resource": resource
+    })
+
+# Monitor for security incidents
+def check_for_anomalies():
+    """Monitor for suspicious activity"""
+    
+    # Check for unusually high decline rates
+    recent_declines = get_decline_rate(minutes=30)
+    if recent_declines > 0.5:
+        alert_security_team("High decline rate detected")
+    
+    # Check for repeated failed attempts
+    failed_attempts = get_failed_attempts_by_ip(minutes=10)
+    if failed_attempts > 5:
+        block_ip_and_alert("Multiple failed payment attempts")
+    
+    # Check for data access anomalies
+    unusual_access = check_access_patterns()
+    if unusual_access:
+        alert_security_team("Unusual data access pattern detected")
+```
+
+## Testing
+
+<Warning>
+**Test Environment Only:**
+Never use real card data in test environments. Use only test cards provided by Tonder.
+</Warning>
+
+Test cards for raw card processing:
+
+| Card Number | Brand | Result |
+|-------------|-------|--------|
+| 4242424242424242 | Visa | Success |
+| 5555555555554444 | Mastercard | Success |
+| 4000000000000002 | Visa | Declined |
+| 4000000000009995 | Visa | Insufficient Funds |
+
+See [Testing Data](/mock-direct-api/testing) for complete test card list.
+
+## Next Steps
+
+<Warning>
+**Reconsider:** For most merchants, tokenized processing is strongly recommended. It eliminates PCI compliance burden while maintaining security and functionality.
+</Warning>
+
+<CardGroup cols={2}>
+  <Card title="Tokenized Processing" icon="key" href="/mock-direct-api/guides/tokenize-cards">
+    Recommended alternative (no PCI Level 1 required)
+  </Card>
+  <Card title="Card Payments" icon="credit-card" href="/mock-direct-api/guides/create-payment-card">
+    Complete card payment guide
+  </Card>
+  <Card title="Security Overview" icon="shield" href="/introduction/security">
+    Learn about Tonder security
+  </Card>
+  <Card title="PCI Compliance" icon="file-check" href="/core-concepts/pci-compliance">
+    PCI DSS requirements
+  </Card>
+</CardGroup>
+
+## Related Resources
+
+- [PCI DSS Standards](https://www.pcisecuritystandards.org/)
+- [Tokenization Guide](/mock-direct-api/guides/tokenize-cards)
+- [Security Best Practices](/introduction/security)
+- [API Reference](/reference/process-transaction)
+

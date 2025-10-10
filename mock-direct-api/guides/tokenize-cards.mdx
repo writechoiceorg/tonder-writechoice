@@ -1,0 +1,584 @@
+---
+title: "Tokenize Cards"
+sidebarTitle: "Card Tokenization"
+description: "Save cards securely for recurring payments and subscriptions"
+---
+
+# Card Tokenization
+
+This guide shows you how to tokenize credit and debit cards using Tonder's Direct API. Tokenization replaces sensitive card data with secure tokens, allowing you to store customer payment methods safely for future use.
+
+## Overview
+
+Card tokenization converts sensitive card data into a secure token that can be safely stored and reused. This approach minimizes PCI compliance requirements and enhances security.
+
+<Info>
+**Benefits of Tokenization:**
+- **Security:** Never store raw card data on your servers
+- **PCI Compliance:** Significantly reduce compliance scope
+- **Recurring Payments:** Enable subscriptions and saved cards
+- **Better UX:** One-click checkout for returning customers
+- **Reduced Fraud:** Tokens are useless if intercepted
+</Info>
+
+## How Tokenization Works
+
+<Steps>
+  <Step title="Collect Card Data">
+    Customer enters card information on your secure form
+  </Step>
+  
+  <Step title="Tokenize Immediately">
+    Send card data to tokenization endpoint
+  </Step>
+  
+  <Step title="Receive Tokens">
+    Get secure tokens for each card field
+  </Step>
+  
+  <Step title="Store Tokens">
+    Safely store tokens in your database
+  </Step>
+  
+  <Step title="Use for Payments">
+    Use tokens instead of raw card data for future payments
+  </Step>
+</Steps>
+
+## Implementation
+
+### Step 1: Get Tokenization Token
+
+First, obtain a tokenization token (different from payment tokens):
+
+```bash cURL
+curl -X GET https://stage.tonder.io/api/v1/vault-token/ \
+  -H "Authorization: Token YOUR_API_KEY"
+```
+
+<CodeGroup>
+```python Python
+import requests
+
+url = "https://stage.tonder.io/api/v1/vault-token/"
+headers = {"Authorization": "Token YOUR_API_KEY"}
+
+response = requests.get(url, headers=headers)
+vault_token = response.json()['vault_token']
+
+print(f"Vault Token: {vault_token}")
+```
+
+```javascript JavaScript
+const response = await fetch('https://stage.tonder.io/api/v1/vault-token/', {
+  headers: {
+    'Authorization': 'Token YOUR_API_KEY'
+  }
+});
+
+const data = await response.json();
+const vaultToken = data.vault_token;
+
+console.log('Vault Token:', vaultToken);
+```
+</CodeGroup>
+
+**Response:**
+```json
+{
+  "vault_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+### Step 2: Tokenize Card Data
+
+Use the vault token to tokenize card information:
+
+```bash cURL
+curl -X POST https://vault.skyflow.com/v1/vaults/VAULT_ID/card \
+  -H "Authorization: Bearer VAULT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "card_number": "4242424242424242",
+    "cvv": "123",
+    "expiration_month": "12",
+    "expiration_year": "2025",
+    "cardholder_name": "Ana María Rodríguez"
+  }'
+```
+
+<CodeGroup>
+```python Python
+import requests
+
+def tokenize_card(vault_token, card_data):
+    """Tokenize card data using Skyflow vault"""
+    
+    url = "https://vault.skyflow.com/v1/vaults/VAULT_ID/card"
+    headers = {
+        "Authorization": f"Bearer {vault_token}",
+        "Content-Type": "application/json"
+    }
+    
+    payload = {
+        "card_number": card_data['number'],
+        "cvv": card_data['cvv'],
+        "expiration_month": card_data['exp_month'],
+        "expiration_year": card_data['exp_year'],
+        "cardholder_name": card_data['name']
+    }
+    
+    response = requests.post(url, headers=headers, json=payload)
+    tokens = response.json()
+    
+    return {
+        "card_number": tokens['card_number_token'],
+        "cvv": tokens['cvv_token'],
+        "expiration_month": tokens['expiration_month_token'],
+        "expiration_year": tokens['expiration_year_token'],
+        "cardholder_name": tokens['cardholder_name_token']
+    }
+
+# Usage
+card_data = {
+    "number": "4242424242424242",
+    "cvv": "123",
+    "exp_month": "12",
+    "exp_year": "2025",
+    "name": "Ana María Rodríguez"
+}
+
+tokens = tokenize_card(vault_token, card_data)
+print("Tokenized Card:", tokens)
+```
+
+```javascript JavaScript
+async function tokenizeCard(vaultToken, cardData) {
+  const response = await fetch('https://vault.skyflow.com/v1/vaults/VAULT_ID/card', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${vaultToken}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      card_number: cardData.number,
+      cvv: cardData.cvv,
+      expiration_month: cardData.expMonth,
+      expiration_year: cardData.expYear,
+      cardholder_name: cardData.name
+    })
+  });
+
+  const tokens = await response.json();
+  
+  return {
+    cardNumber: tokens.card_number_token,
+    cvv: tokens.cvv_token,
+    expirationMonth: tokens.expiration_month_token,
+    expirationYear: tokens.expiration_year_token,
+    cardholderName: tokens.cardholder_name_token
+  };
+}
+
+// Usage
+const cardData = {
+  number: '4242424242424242',
+  cvv: '123',
+  expMonth: '12',
+  expYear: '2025',
+  name: 'Ana María Rodríguez'
+};
+
+const tokens = await tokenizeCard(vaultToken, cardData);
+console.log('Tokenized Card:', tokens);
+```
+</CodeGroup>
+
+**Response:**
+```json
+{
+  "card_number_token": "9230-0892-4469-1474",
+  "cvv_token": "d31f0da3-0ed3-4ad8-8b68-14c2669a99a7",
+  "expiration_month_token": "e401a32e-4174-424f-9688-727005f6a80e",
+  "expiration_year_token": "bd9ccc23-3d00-4109-9626-fc6581389063",
+  "cardholder_name_token": "c05d89b2-299c-4f93-b49a-42be00d3b64b"
+}
+```
+
+### Step 3: Store Tokens Securely
+
+Save the tokens in your database:
+
+```python
+def save_customer_card(customer_id, tokens, last_four, brand):
+    """Save tokenized card to database"""
+    
+    card = {
+        "customer_id": customer_id,
+        "card_number_token": tokens['card_number'],
+        "cvv_token": tokens['cvv'],
+        "expiration_month_token": tokens['expiration_month'],
+        "expiration_year_token": tokens['expiration_year'],
+        "cardholder_name_token": tokens['cardholder_name'],
+        "last_four": last_four,  # For display
+        "brand": brand,  # For display
+        "created_at": datetime.now()
+    }
+    
+    # Save to your database
+    db.cards.insert(card)
+    
+    return card['id']
+```
+
+<Warning>
+**Security Note:** While tokens are safer than raw card data, still:
+- Encrypt tokens in your database
+- Implement proper access controls
+- Log all token access
+- Never expose tokens in logs or error messages
+</Warning>
+
+### Step 4: Use Tokens for Payments
+
+Use stored tokens to process payments:
+
+```python
+def process_payment_with_token(customer_id, amount):
+    """Process payment using stored card token"""
+    
+    # Retrieve customer's card
+    card = db.cards.find_one({"customer_id": customer_id})
+    
+    # Build payment request with tokens
+    payment_request = {
+        "operation_type": "payment",
+        "amount": amount,
+        "currency": "MXN",
+        "customer": get_customer_info(customer_id),
+        "payment_method": {
+            "type": "CARD",
+            "card_number": card['card_number_token'],
+            "cardholder_name": card['cardholder_name_token'],
+            "cvv": card['cvv_token'],
+            "expiration_month": card['expiration_month_token'],
+            "expiration_year": card['expiration_year_token']
+        },
+        "client_reference": generate_order_id(),
+        "return_url": "https://yourstore.com/payment/return"
+    }
+    
+    # Process payment
+    response = requests.post(
+        "https://stage.tonder.io/api/v1/process/",
+        headers={
+            "Authorization": f"Token {API_KEY}",
+            "Content-Type": "application/json"
+        },
+        json=payment_request
+    )
+    
+    return response.json()
+```
+
+## Complete Implementation Example
+
+```python
+class CardVaultManager:
+    def __init__(self, api_key):
+        self.api_key = api_key
+        self.base_url = "https://stage.tonder.io/api/v1"
+        self.vault_url = "https://vault.skyflow.com/v1/vaults/VAULT_ID"
+    
+    def get_vault_token(self):
+        """Get vault token for tokenization"""
+        url = f"{self.base_url}/vault-token/"
+        headers = {"Authorization": f"Token {self.api_key}"}
+        
+        response = requests.get(url, headers=headers)
+        return response.json()['vault_token']
+    
+    def tokenize_card(self, card_data):
+        """Tokenize card data"""
+        vault_token = self.get_vault_token()
+        
+        url = f"{self.vault_url}/card"
+        headers = {
+            "Authorization": f"Bearer {vault_token}",
+            "Content-Type": "application/json"
+        }
+        
+        payload = {
+            "card_number": card_data['number'],
+            "cvv": card_data['cvv'],
+            "expiration_month": card_data['exp_month'],
+            "expiration_year": card_data['exp_year'],
+            "cardholder_name": card_data['name']
+        }
+        
+        response = requests.post(url, headers=headers, json=payload)
+        return response.json()
+    
+    def save_card(self, customer_id, card_data):
+        """Tokenize and save card for customer"""
+        
+        # Tokenize
+        tokens = self.tokenize_card(card_data)
+        
+        # Extract display info (last 4 digits, brand)
+        last_four = card_data['number'][-4:]
+        brand = self.detect_card_brand(card_data['number'])
+        
+        # Save to database
+        card_id = db.cards.insert({
+            "customer_id": customer_id,
+            "card_number_token": tokens['card_number_token'],
+            "cvv_token": tokens['cvv_token'],
+            "expiration_month_token": tokens['expiration_month_token'],
+            "expiration_year_token": tokens['expiration_year_token'],
+            "cardholder_name_token": tokens['cardholder_name_token'],
+            "last_four": last_four,
+            "brand": brand,
+            "created_at": datetime.now()
+        })
+        
+        return card_id
+    
+    def detect_card_brand(self, card_number):
+        """Detect card brand from number"""
+        if card_number.startswith('4'):
+            return 'visa'
+        elif card_number.startswith(('51', '52', '53', '54', '55')):
+            return 'mastercard'
+        elif card_number.startswith(('34', '37')):
+            return 'amex'
+        else:
+            return 'unknown'
+    
+    def charge_saved_card(self, customer_id, amount, order_id):
+        """Charge customer's saved card"""
+        
+        # Get saved card
+        card = db.cards.find_one({"customer_id": customer_id})
+        if not card:
+            raise ValueError("No saved card found")
+        
+        # Build payment request
+        payment_request = {
+            "operation_type": "payment",
+            "amount": amount,
+            "currency": "MXN",
+            "customer": self.get_customer_info(customer_id),
+            "payment_method": {
+                "type": "CARD",
+                "card_number": card['card_number_token'],
+                "cardholder_name": card['cardholder_name_token'],
+                "cvv": card['cvv_token'],
+                "expiration_month": card['expiration_month_token'],
+                "expiration_year": card['expiration_year_token']
+            },
+            "client_reference": order_id,
+            "return_url": "https://yourstore.com/payment/return"
+        }
+        
+        # Process payment
+        response = requests.post(
+            f"{self.base_url}/process/",
+            headers={
+                "Authorization": f"Token {self.api_key}",
+                "Content-Type": "application/json"
+            },
+            json=payment_request
+        )
+        
+        return response.json()
+
+# Usage
+vault_manager = CardVaultManager("YOUR_API_KEY")
+
+# Save new card
+card_data = {
+    "number": "4242424242424242",
+    "cvv": "123",
+    "exp_month": "12",
+    "exp_year": "2025",
+    "name": "Ana María Rodríguez"
+}
+
+card_id = vault_manager.save_card(customer_id="cust_123", card_data=card_data)
+print(f"Card saved: {card_id}")
+
+# Charge saved card
+result = vault_manager.charge_saved_card(
+    customer_id="cust_123",
+    amount=99.99,
+    order_id="order_456"
+)
+print(f"Payment status: {result['status']}")
+```
+
+## Frontend Integration
+
+Implement secure card collection on the frontend:
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Save Card</title>
+</head>
+<body>
+  <form id="card-form">
+    <input type="text" id="card-number" placeholder="Card Number" />
+    <input type="text" id="card-name" placeholder="Cardholder Name" />
+    <input type="text" id="card-exp-month" placeholder="MM" />
+    <input type="text" id="card-exp-year" placeholder="YYYY" />
+    <input type="text" id="card-cvv" placeholder="CVV" />
+    <button type="submit">Save Card</button>
+  </form>
+
+  <script>
+    document.getElementById('card-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      // Collect card data
+      const cardData = {
+        number: document.getElementById('card-number').value.replace(/\s/g, ''),
+        name: document.getElementById('card-name').value,
+        expMonth: document.getElementById('card-exp-month').value,
+        expYear: document.getElementById('card-exp-year').value,
+        cvv: document.getElementById('card-cvv').value
+      };
+
+      // Send to your backend to tokenize
+      const response = await fetch('/api/cards/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(cardData)
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        alert('Card saved successfully!');
+        // Clear form
+        document.getElementById('card-form').reset();
+      } else {
+        alert('Error saving card: ' + result.error);
+      }
+    });
+  </script>
+</body>
+</html>
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Security">
+    - Never log or store raw card data
+    - Tokenize immediately upon collection
+    - Use HTTPS for all card data transmission
+    - Implement CSP headers to prevent XSS
+    - Regularly rotate vault tokens
+    - Encrypt tokens in your database
+  </Accordion>
+
+  <Accordion title="User Experience">
+    - Show saved cards with brand and last 4 digits
+    - Allow customers to manage saved cards
+    - Provide option to save card during checkout
+    - Clearly communicate card storage
+    - Make card deletion easy
+  </Accordion>
+
+  <Accordion title="Compliance">
+    - Inform customers about card storage in privacy policy
+    - Implement proper consent mechanisms
+    - Provide card deletion upon request
+    - Keep audit logs of card access
+    - Regular security audits
+  </Accordion>
+
+  <Accordion title="Error Handling">
+    - Handle tokenization failures gracefully
+    - Validate card data before tokenizing
+    - Provide clear error messages
+    - Implement retry logic for network issues
+    - Log tokenization errors for monitoring
+  </Accordion>
+</AccordionGroup>
+
+## Display Saved Cards
+
+Show saved cards to customers:
+
+```python
+def get_customer_cards(customer_id):
+    """Get customer's saved cards for display"""
+    
+    cards = db.cards.find({"customer_id": customer_id})
+    
+    return [
+        {
+            "id": card['id'],
+            "brand": card['brand'],
+            "last_four": card['last_four'],
+            "display_name": f"{card['brand'].upper()} •••• {card['last_four']}",
+            "created_at": card['created_at']
+        }
+        for card in cards
+    ]
+```
+
+```html
+<div class="saved-cards">
+  <h3>Saved Cards</h3>
+  <div id="cards-list">
+    <!-- Populated dynamically -->
+  </div>
+</div>
+
+<script>
+async function loadSavedCards() {
+  const response = await fetch('/api/cards');
+  const cards = await response.json();
+
+  const cardsList = document.getElementById('cards-list');
+  cardsList.innerHTML = cards.map(card => `
+    <div class="card-item" data-card-id="${card.id}">
+      <img src="/icons/${card.brand}.svg" alt="${card.brand}" />
+      <span>${card.display_name}</span>
+      <button onclick="deleteCard('${card.id}')">Delete</button>
+      <button onclick="useCard('${card.id}')">Use for Payment</button>
+    </div>
+  `).join('');
+}
+
+loadSavedCards();
+</script>
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Create Payment" icon="credit-card" href="/mock-direct-api/guides/create-payment-card">
+    Use tokens for payments
+  </Card>
+  <Card title="Implement 3DS" icon="shield-check" href="/mock-direct-api/guides/implement-3ds">
+    Add secure authentication
+  </Card>
+  <Card title="Setup Webhooks" icon="webhook" href="/mock-direct-api/guides/setup-webhooks">
+    Get payment notifications
+  </Card>
+  <Card title="Testing" icon="flask" href="/mock-direct-api/testing">
+    Test tokenization
+  </Card>
+</CardGroup>
+
+## Related Resources
+
+- [Card Payments Guide](/mock-direct-api/guides/create-payment-card)
+- [PCI Compliance](/introduction/security)
+- [API Reference](/reference/tokenize-card-data)
+

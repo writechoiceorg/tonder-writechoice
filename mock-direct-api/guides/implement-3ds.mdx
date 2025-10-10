@@ -1,0 +1,489 @@
+---
+title: "Implement 3D Secure"
+sidebarTitle: "3D Secure (3DS)"
+description: "Add strong customer authentication with 3D Secure 2.0"
+---
+
+# Implement 3D Secure Authentication
+
+This guide shows you how to implement 3D Secure (3DS) authentication for card payments using Tonder's Direct API. 3DS adds an extra layer of security and helps reduce fraud while meeting regulatory requirements.
+
+## Overview
+
+3D Secure is an authentication protocol that adds a verification step where customers prove their identity to their card issuer. Version 2.0 offers a smoother experience with risk-based authentication and biometric options.
+
+<Info>
+**Why Use 3D Secure:**
+- **Fraud Protection:** Shift liability to card issuers for authenticated transactions
+- **Regulatory Compliance:** Meet Strong Customer Authentication (SCA) requirements
+- **Higher Authorization Rates:** Some issuers prefer or require 3DS
+- **Customer Trust:** Show customers you take security seriously
+</Info>
+
+## How 3DS Works
+
+<Steps>
+  <Step title="Customer Enters Card">
+    Customer provides card details on your payment form
+  </Step>
+  
+  <Step title="Initial Authorization">
+    Tonder initiates the payment with the card issuer
+  </Step>
+  
+  <Step title="3DS Challenge (If Required)">
+    If 3DS is required, customer is redirected to their bank for authentication
+  </Step>
+  
+  <Step title="Customer Authenticates">
+    Customer verifies their identity (password, biometric, OTP, etc.)
+  </Step>
+  
+  <Step title="Return to Merchant">
+    Customer returns to your site after authentication
+  </Step>
+  
+  <Step title="Payment Completion">
+    Payment is completed with authentication proof
+  </Step>
+</Steps>
+
+## Implementation
+
+### Step 1: Include Return URL
+
+Always include a `return_url` in your card payment requests:
+
+```json
+{
+  "operation_type": "payment",
+  "amount": 150.00,
+  "currency": "MXN",
+  "customer": {
+    "name": "Ana María Rodríguez",
+    "email": "ana.rodriguez@email.com"
+  },
+  "payment_method": {
+    "type": "CARD",
+    "card_number": "9230-0892-4469-1474",
+    "cardholder_name": "c05d89b2-299c-4f93-b49a-42be00d3b64b",
+    "cvv": "d31f0da3-0ed3-4ad8-8b68-14c2669a99a7",
+    "expiration_month": "e401a32e-4174-424f-9688-727005f6a80e",
+    "expiration_year": "bd9ccc23-3d00-4109-9626-fc6581389063"
+  },
+  "client_reference": "order-789",
+  "return_url": "https://yourstore.com/payment/return"
+}
+```
+
+<Warning>
+The `return_url` is **required** for card payments. Without it, 3DS authentication cannot complete.
+</Warning>
+
+### Step 2: Send Payment Request
+
+```bash cURL
+curl -X POST https://stage.tonder.io/api/v1/process/ \
+  -H "Authorization: Token YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "operation_type": "payment",
+    "amount": 150.00,
+    "currency": "MXN",
+    "customer": {
+      "name": "Ana María Rodríguez",
+      "email": "ana.rodriguez@email.com"
+    },
+    "payment_method": {
+      "type": "CARD",
+      "card_number": "9230-0892-4469-1474",
+      "cardholder_name": "c05d89b2-299c-4f93-b49a-42be00d3b64b",
+      "cvv": "d31f0da3-0ed3-4ad8-8b68-14c2669a99a7",
+      "expiration_month": "e401a32e-4174-424f-9688-727005f6a80e",
+      "expiration_year": "bd9ccc23-3d00-4109-9626-fc6581389063"
+    },
+    "client_reference": "order-789",
+    "return_url": "https://yourstore.com/payment/return"
+  }'
+```
+
+### Step 3: Handle the Response
+
+The API response indicates whether 3DS authentication is required:
+
+<Tabs>
+  <Tab title="3DS Required">
+    ```json
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "status": "pending",
+      "next_action": {
+        "type": "redirect",
+        "redirect_to_url": {
+          "url": "https://secure.payment-provider.com/3ds/abc123",
+          "return_url": "https://yourstore.com/payment/return"
+        }
+      }
+    }
+    ```
+
+    **Action:** Redirect customer to the 3DS URL
+  </Tab>
+
+  <Tab title="No 3DS Required">
+    ```json
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "operation_type": "payment",
+      "status": "authorized",
+      "amount": 150.00,
+      "currency": "MXN",
+      "payment_id": 12345
+    }
+    ```
+
+    **Action:** Payment complete, no further action needed
+  </Tab>
+</Tabs>
+
+### Step 4: Redirect to 3DS
+
+When 3DS is required, immediately redirect the customer:
+
+```javascript
+function handlePaymentResponse(response) {
+  // Save transaction ID for later
+  sessionStorage.setItem('transaction_id', response.id);
+
+  if (response.next_action && response.next_action.type === 'redirect') {
+    // Show loading message
+    showMessage('Redirecting to secure authentication...');
+    
+    // Redirect to 3DS page
+    window.location.href = response.next_action.redirect_to_url.url;
+  } else {
+    // No 3DS required, payment complete
+    if (response.status === 'authorized') {
+      showSuccessPage(response);
+    }
+  }
+}
+```
+
+<Info>
+**Best Practice:** Show a loading screen or message before redirecting to prepare customers for leaving your site temporarily.
+</Info>
+
+### Step 5: Handle Customer Return
+
+When the customer completes authentication, they return to your `return_url`:
+
+```javascript
+// On your return URL page
+async function handleAuthenticationReturn() {
+  // Get transaction ID from storage
+  const transactionId = sessionStorage.getItem('transaction_id');
+  
+  if (!transactionId) {
+    showError('Transaction not found');
+    return;
+  }
+
+  // Show loading state
+  showMessage('Verifying payment...');
+
+  // Check final payment status
+  const response = await fetch(
+    `https://stage.tonder.io/api/v1/transactions/${transactionId}/`,
+    {
+      headers: {
+        'Authorization': 'Token YOUR_API_KEY'
+      }
+    }
+  );
+
+  const transaction = await response.json();
+
+  // Handle final status
+  if (transaction.status === 'authorized' || transaction.status === 'success') {
+    showSuccessPage(transaction);
+  } else if (transaction.status === 'declined') {
+    showDeclinedPage('Authentication failed or payment declined');
+  } else {
+    showErrorPage('Payment could not be completed');
+  }
+
+  // Clean up
+  sessionStorage.removeItem('transaction_id');
+}
+
+// Run on page load
+document.addEventListener('DOMContentLoaded', handleAuthenticationReturn);
+```
+
+## Complete Implementation Example
+
+```python
+# Backend
+from flask import Flask, request, jsonify, redirect, render_template
+import requests
+
+app = Flask(__name__)
+API_KEY = "YOUR_API_KEY"
+BASE_URL = "https://stage.tonder.io/api/v1"
+
+@app.route('/payment/create', methods=['POST'])
+def create_payment():
+    """Create payment with 3DS support"""
+    
+    data = request.json
+    
+    # Build payment request
+    payment_request = {
+        "operation_type": "payment",
+        "amount": data['amount'],
+        "currency": "MXN",
+        "customer": data['customer'],
+        "payment_method": {
+            "type": "CARD",
+            **data['card_data']  # Tokenized card data
+        },
+        "client_reference": data['order_id'],
+        "return_url": f"{request.url_root}payment/return"
+    }
+    
+    # Send to Tonder API
+    response = requests.post(
+        f"{BASE_URL}/process/",
+        headers={
+            "Authorization": f"Token {API_KEY}",
+            "Content-Type": "application/json"
+        },
+        json=payment_request
+    )
+    
+    result = response.json()
+    
+    # Check if 3DS is required
+    if 'next_action' in result:
+        return jsonify({
+            "requires_3ds": True,
+            "redirect_url": result['next_action']['redirect_to_url']['url'],
+            "transaction_id": result['id']
+        })
+    else:
+        return jsonify({
+            "requires_3ds": False,
+            "status": result['status'],
+            "transaction_id": result['id']
+        })
+
+@app.route('/payment/return')
+def payment_return():
+    """Handle customer return after 3DS"""
+    
+    # Get transaction ID from query params or session
+    transaction_id = request.args.get('transaction_id')
+    
+    if not transaction_id:
+        return render_template('error.html', 
+                             message='Transaction not found')
+    
+    # Check final payment status
+    response = requests.get(
+        f"{BASE_URL}/transactions/{transaction_id}/",
+        headers={"Authorization": f"Token {API_KEY}"}
+    )
+    
+    transaction = response.json()
+    
+    if transaction['status'] in ['authorized', 'success']:
+        return render_template('success.html', 
+                             transaction=transaction)
+    elif transaction['status'] == 'declined':
+        return render_template('declined.html', 
+                             message='Payment authentication failed')
+    else:
+        return render_template('error.html', 
+                             message='Payment could not be completed')
+
+# Frontend
+async function processCardPayment(cardData, amount, customer, orderId) {
+  const response = await fetch('/payment/create', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      amount: amount,
+      customer: customer,
+      card_data: cardData,  // Tokenized
+      order_id: orderId
+    })
+  });
+
+  const result = await response.json();
+
+  if (result.requires_3ds) {
+    // Save transaction ID and redirect
+    sessionStorage.setItem('transaction_id', result.transaction_id);
+    window.location.href = result.redirect_url;
+  } else {
+    // Payment complete without 3DS
+    if (result.status === 'authorized') {
+      showSuccessPage(result.transaction_id);
+    } else {
+      showErrorPage('Payment failed');
+    }
+  }
+}
+```
+
+## 3DS Response Data
+
+After successful authentication, the transaction includes 3DS details:
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "status": "authorized",
+  "amount": 150.00,
+  "three_ds": {
+    "version": "2.0",
+    "status": "authenticated",
+    "eci": "05",
+    "cavv": "AAABCZIhcQAAAABZlyFxAAAAAAA=",
+    "transaction_id": "3ds_txn_123"
+  }
+}
+```
+
+### 3DS Fields
+
+| Field | Description |
+|-------|-------------|
+| `version` | 3DS version used (1.0 or 2.0) |
+| `status` | Authentication status (`authenticated`, `not_authenticated`, `attempted`) |
+| `eci` | Electronic Commerce Indicator |
+| `cavv` | Cardholder Authentication Verification Value |
+| `transaction_id` | 3DS transaction identifier |
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="User Experience">
+    - Inform customers about the authentication step upfront
+    - Show a loading screen before redirecting
+    - Don't close the window during 3DS
+    - Handle the return gracefully with clear status messages
+    - Provide support contact if authentication fails
+  </Accordion>
+
+  <Accordion title="Technical Implementation">
+    - Always include return_url for card payments
+    - Save transaction ID before redirecting
+    - Verify final status on return (don't trust URL params alone)
+    - Implement timeout logic for abandoned authentications
+    - Handle edge cases (back button, tab close, etc.)
+  </Accordion>
+
+  <Accordion title="Error Handling">
+    - Provide clear messages for failed authentication
+    - Allow customers to retry with different card
+    - Offer alternative payment methods
+    - Log all 3DS attempts for analysis
+    - Monitor authentication failure rates
+  </Accordion>
+
+  <Accordion title="Testing">
+    - Test with cards that require 3DS
+    - Test cards that don't require 3DS
+    - Test authentication failure scenarios
+    - Verify return URL handling
+    - Test on mobile devices (critical for 3DS UX)
+  </Accordion>
+</AccordionGroup>
+
+## Common Scenarios
+
+| Scenario | Handling |
+|----------|----------|
+| **Successful Auth** | Customer completes authentication, payment authorized |
+| **Failed Auth** | Customer fails authentication, payment declined |
+| **Abandoned Auth** | Customer closes window/tab, implement timeout logic |
+| **Frictionless** | Low-risk transactions may skip challenge (3DS 2.0) |
+| **Challenge Required** | High-risk or issuer preference requires customer interaction |
+
+## Testing 3DS
+
+Use these test cards in sandbox:
+
+| Card Number | 3DS Behavior |
+|-------------|--------------|
+| `4000000000003063` | Requires authentication, successful |
+| `4000008260003178` | Requires authentication, fails |
+| `4242424242424242` | No authentication required |
+
+See [Testing Data](/mock-direct-api/testing) for complete test card list.
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Customer Not Redirected">
+    **Causes:**
+    - Missing return_url
+    - JavaScript error preventing redirect
+    - Pop-up blocker interfering
+    
+    **Solutions:**
+    - Verify return_url is included
+    - Check browser console for errors
+    - Use `window.location.href` not `window.open()`
+  </Accordion>
+
+  <Accordion title="Return URL Not Working">
+    **Causes:**
+    - Incorrect return_url format
+    - Return URL not accessible
+    - Transaction ID not persisted
+    
+    **Solutions:**
+    - Use full absolute URLs
+    - Test return URL accessibility
+    - Use sessionStorage or query params for transaction ID
+  </Accordion>
+
+  <Accordion title="Status Still Pending After Return">
+    **Causes:**
+    - Customer abandoned authentication
+    - Processing delay
+    - Network issues
+    
+    **Solutions:**
+    - Show pending state to customer
+    - Use webhooks for final confirmation
+    - Implement polling with timeout
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Create Card Payment" icon="credit-card" href="/mock-direct-api/guides/create-payment-card">
+    Full card payment guide
+  </Card>
+  <Card title="Tokenization" icon="key" href="/mock-direct-api/guides/tokenize-cards">
+    Secure card tokenization
+  </Card>
+  <Card title="Setup Webhooks" icon="webhook" href="/mock-direct-api/guides/setup-webhooks">
+    Get real-time updates
+  </Card>
+  <Card title="Testing" icon="flask" href="/mock-direct-api/testing">
+    Test 3DS flows
+  </Card>
+</CardGroup>
+
+## Related Resources
+
+- [3D Secure Lifecycle](/core-concepts/3ds-lifecycle)
+- [Card Payments Overview](/mock-direct-api/card-payments)
+- [API Reference](/reference/process-transaction)
+

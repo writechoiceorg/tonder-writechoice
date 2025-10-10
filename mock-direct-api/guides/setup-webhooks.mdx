@@ -1,0 +1,626 @@
+---
+title: "Setup Webhooks"
+sidebarTitle: "Webhooks"
+description: "Receive real-time payment notifications and status updates"
+---
+
+# Setup Webhooks
+
+This guide shows you how to implement webhooks to receive real-time notifications about payment events using Tonder's Direct API. Webhooks eliminate the need for polling and ensure your system stays synchronized with payment statuses.
+
+## Overview
+
+Webhooks are HTTP callbacks that Tonder sends to your server when specific events occur. Instead of constantly polling for updates, your system receives instant notifications when payments complete, fail, or change status.
+
+<Info>
+**Why Use Webhooks:**
+- **Real-time Updates:** Get instant notifications when events occur
+- **Reduced Polling:** No need to constantly check transaction status
+- **Better Reliability:** Don't miss events due to polling intervals
+- **Improved UX:** Update customers immediately when payments complete
+- **Asynchronous Payments:** Essential for OXXO, SPEI, and other async methods
+</Info>
+
+## How Webhooks Work
+
+<Steps>
+  <Step title="Event Occurs">
+    A payment event happens (payment success, failure, refund, etc.)
+  </Step>
+  
+  <Step title="Tonder Sends Notification">
+    Tonder sends an HTTP POST request to your webhook URL
+  </Step>
+  
+  <Step title="Your Server Processes">
+    Your endpoint receives and processes the webhook payload
+  </Step>
+  
+  <Step title="Acknowledgment">
+    Your server responds with 200 OK to confirm receipt
+  </Step>
+  
+  <Step title="Retries (if needed)">
+    If no acknowledgment, Tonder retries the webhook
+  </Step>
+</Steps>
+
+## Implementation
+
+### Step 1: Create Webhook Endpoint
+
+Create a secure endpoint to receive webhooks:
+
+```python Python
+from flask import Flask, request, jsonify
+import hashlib
+import hmac
+
+app = Flask(__name__)
+WEBHOOK_SECRET = "your_webhook_secret"  # Get from Tonder dashboard
+
+@app.route('/webhooks/tonder', methods=['POST'])
+def handle_webhook():
+    """Handle incoming webhook from Tonder"""
+    
+    # Get webhook payload
+    payload = request.get_data()
+    signature = request.headers.get('X-Tonder-Signature')
+    
+    # Verify webhook signature
+    if not verify_signature(payload, signature, WEBHOOK_SECRET):
+        return jsonify({"error": "Invalid signature"}), 401
+    
+    # Parse webhook data
+    data = request.json
+    event_type = data.get('event')
+    event_data = data.get('data')
+    
+    # Process event
+    if event_type == 'payment.status_changed':
+        handle_payment_status_change(event_data)
+    elif event_type == 'payment.completed':
+        handle_payment_completed(event_data)
+    elif event_type == 'payment.failed':
+        handle_payment_failed(event_data)
+    elif event_type == 'refund.completed':
+        handle_refund_completed(event_data)
+    else:
+        print(f"Unknown event type: {event_type}")
+    
+    # Acknowledge receipt
+    return jsonify({"status": "received"}), 200
+
+def verify_signature(payload, signature, secret):
+    """Verify webhook signature for security"""
+    expected_signature = hmac.new(
+        secret.encode(),
+        payload,
+        hashlib.sha256
+    ).hexdigest()
+    
+    return hmac.compare_digest(signature, expected_signature)
+
+def handle_payment_status_change(data):
+    """Handle payment status change event"""
+    transaction_id = data['id']
+    new_status = data['status']
+    
+    # Update your database
+    db.transactions.update_one(
+        {"transaction_id": transaction_id},
+        {"$set": {"status": new_status, "updated_at": datetime.now()}}
+    )
+    
+    # Trigger notifications, fulfillment, etc.
+    if new_status == 'success':
+        fulfill_order(transaction_id)
+        notify_customer_success(transaction_id)
+    elif new_status in ['declined', 'failed']:
+        notify_customer_failure(transaction_id)
+
+def handle_payment_completed(data):
+    """Handle payment completion"""
+    transaction_id = data['id']
+    amount = data['amount']
+    
+    print(f"Payment {transaction_id} completed: ${amount}")
+    
+    # Mark order as paid
+    fulfill_order(transaction_id)
+
+def handle_payment_failed(data):
+    """Handle payment failure"""
+    transaction_id = data['id']
+    reason = data.get('failure_reason', 'Unknown')
+    
+    print(f"Payment {transaction_id} failed: {reason}")
+    
+    # Update order status
+    cancel_order(transaction_id)
+
+def handle_refund_completed(data):
+    """Handle refund completion"""
+    refund_id = data['id']
+    original_transaction_id = data['original_transaction_id']
+    amount = data['amount']
+    
+    print(f"Refund {refund_id} completed: ${amount}")
+    
+    # Update order and notify customer
+    update_refund_status(refund_id, 'completed')
+    notify_customer_refund(original_transaction_id, amount)
+
+if __name__ == '__main__':
+    app.run(port=5000)
+```
+
+<CodeGroup>
+```javascript JavaScript (Express)
+const express = require('express');
+const crypto = require('crypto');
+const bodyParser = require('body-parser');
+
+const app = express();
+const WEBHOOK_SECRET = 'your_webhook_secret';
+
+app.use(bodyParser.json({
+  verify: (req, res, buf) => {
+    req.rawBody = buf.toString('utf8');
+  }
+}));
+
+app.post('/webhooks/tonder', (req, res) => {
+  const signature = req.headers['x-tonder-signature'];
+  
+  // Verify signature
+  if (!verifySignature(req.rawBody, signature, WEBHOOK_SECRET)) {
+    return res.status(401).json({ error: 'Invalid signature' });
+  }
+  
+  const { event, data } = req.body;
+  
+  // Process event
+  switch (event) {
+    case 'payment.status_changed':
+      handlePaymentStatusChange(data);
+      break;
+    case 'payment.completed':
+      handlePaymentCompleted(data);
+      break;
+    case 'payment.failed':
+      handlePaymentFailed(data);
+      break;
+    case 'refund.completed':
+      handleRefundCompleted(data);
+      break;
+    default:
+      console.log('Unknown event:', event);
+  }
+  
+  // Acknowledge receipt
+  res.status(200).json({ status: 'received' });
+});
+
+function verifySignature(payload, signature, secret) {
+  const expectedSignature = crypto
+    .createHmac('sha256', secret)
+    .update(payload)
+    .digest('hex');
+  
+  return crypto.timingSafeEqual(
+    Buffer.from(signature),
+    Buffer.from(expectedSignature)
+  );
+}
+
+function handlePaymentStatusChange(data) {
+  console.log('Payment status changed:', data);
+  // Update database, trigger fulfillment, etc.
+}
+
+app.listen(5000, () => {
+  console.log('Webhook server running on port 5000');
+});
+```
+
+```php PHP
+<?php
+function handleWebhook() {
+    $WEBHOOK_SECRET = 'your_webhook_secret';
+    
+    // Get payload and signature
+    $payload = file_get_contents('php://input');
+    $signature = $_SERVER['HTTP_X_TONDER_SIGNATURE'] ?? '';
+    
+    // Verify signature
+    $expectedSignature = hash_hmac('sha256', $payload, $WEBHOOK_SECRET);
+    
+    if (!hash_equals($signature, $expectedSignature)) {
+        http_response_code(401);
+        echo json_encode(['error' => 'Invalid signature']);
+        return;
+    }
+    
+    // Parse data
+    $data = json_decode($payload, true);
+    $event = $data['event'];
+    $eventData = $data['data'];
+    
+    // Process event
+    switch ($event) {
+        case 'payment.status_changed':
+            handlePaymentStatusChange($eventData);
+            break;
+        case 'payment.completed':
+            handlePaymentCompleted($eventData);
+            break;
+        case 'payment.failed':
+            handlePaymentFailed($eventData);
+            break;
+        default:
+            error_log("Unknown event: $event");
+    }
+    
+    // Acknowledge
+    http_response_code(200);
+    echo json_encode(['status' => 'received']);
+}
+
+handleWebhook();
+?>
+```
+</CodeGroup>
+
+### Step 2: Register Webhook URL
+
+Register your webhook endpoint in the Tonder Dashboard:
+
+1. Go to **Settings** → **Webhooks**
+2. Click **Add Webhook**
+3. Enter your webhook URL: `https://yoursite.com/webhooks/tonder`
+4. Select events to receive
+5. Copy your webhook secret
+6. Save configuration
+
+<Info>
+Your webhook URL must be publicly accessible and use HTTPS in production.
+</Info>
+
+### Step 3: Handle Webhook Events
+
+Process different event types:
+
+```python
+def handle_payment_status_change(data):
+    """Process payment status change"""
+    transaction_id = data['id']
+    old_status = data.get('previous_status')
+    new_status = data['status']
+    
+    print(f"Payment {transaction_id}: {old_status} → {new_status}")
+    
+    # Update database
+    update_transaction_status(transaction_id, new_status)
+    
+    # Handle specific status changes
+    if new_status == 'success':
+        # Payment completed successfully
+        order = get_order_by_transaction(transaction_id)
+        fulfill_order(order['id'])
+        send_confirmation_email(order['customer_email'])
+    
+    elif new_status == 'declined':
+        # Payment declined
+        send_decline_notification(transaction_id)
+    
+    elif new_status == 'expired':
+        # Payment voucher expired (OXXO/SPEI)
+        send_expiration_notice(transaction_id)
+```
+
+## Webhook Events
+
+Tonder sends these webhook events:
+
+| Event | Trigger | Use Case |
+|-------|---------|----------|
+| `payment.created` | Payment initiated | Track payment attempts |
+| `payment.status_changed` | Status changes | Update order status |
+| `payment.completed` | Payment successful | Fulfill order |
+| `payment.failed` | Payment failed | Notify customer |
+| `payment.expired` | Payment expired | Clean up pending orders |
+| `refund.created` | Refund initiated | Track refund requests |
+| `refund.completed` | Refund processed | Notify customer |
+| `refund.failed` | Refund failed | Handle refund errors |
+
+## Webhook Payload Examples
+
+### Payment Status Changed
+
+```json
+{
+  "event": "payment.status_changed",
+  "timestamp": "2024-07-26T14:30:00Z",
+  "data": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "previous_status": "pending",
+    "status": "success",
+    "amount": 250.00,
+    "currency": "MXN",
+    "payment_method": "OXXO",
+    "client_reference": "order-123",
+    "completed_at": "2024-07-26T14:30:00Z"
+  }
+}
+```
+
+### Payment Completed
+
+```json
+{
+  "event": "payment.completed",
+  "timestamp": "2024-07-26T10:30:15Z",
+  "data": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "status": "success",
+    "amount": 150.00,
+    "currency": "MXN",
+    "payment_method": "CARD",
+    "client_reference": "order-789",
+    "authorization_code": "123456",
+    "completed_at": "2024-07-26T10:30:15Z"
+  }
+}
+```
+
+### Refund Completed
+
+```json
+{
+  "event": "refund.completed",
+  "timestamp": "2024-07-26T15:00:00Z",
+  "data": {
+    "id": "07230c98-e749-4d27-a90d-6f3e117205aa",
+    "status": "Success",
+    "amount": 50.00,
+    "currency": "MXN",
+    "original_transaction_id": "550e8400-e29b-41d4-a716-446655440000",
+    "refund_id": "74",
+    "completed_at": "2024-07-26T15:00:00Z"
+  }
+}
+```
+
+## Security Best Practices
+
+<AccordionGroup>
+  <Accordion title="Signature Verification">
+    **Always verify webhook signatures:**
+    
+    ```python
+    def verify_signature(payload, signature, secret):
+        """Verify webhook authenticity"""
+        expected = hmac.new(
+            secret.encode(),
+            payload,
+            hashlib.sha256
+        ).hexdigest()
+        
+        # Use constant-time comparison to prevent timing attacks
+        return hmac.compare_digest(signature, expected)
+    ```
+    
+    - Never process unsigned webhooks
+    - Use constant-time comparison
+    - Keep webhook secret secure
+    - Rotate secrets periodically
+  </Accordion>
+
+  <Accordion title="HTTPS Only">
+    - Use HTTPS for webhook URLs in production
+    - Reject HTTP connections
+    - Use valid SSL certificates
+    - Keep certificates up to date
+  </Accordion>
+
+  <Accordion title="Idempotency">
+    **Handle duplicate webhooks:**
+    
+    ```python
+    def process_webhook_idempotent(webhook_id, data):
+        """Process webhook only once"""
+        
+        # Check if already processed
+        if db.webhooks.find_one({"webhook_id": webhook_id}):
+            return {"status": "already_processed"}
+        
+        # Process webhook
+        process_payment_event(data)
+        
+        # Mark as processed
+        db.webhooks.insert({
+            "webhook_id": webhook_id,
+            "processed_at": datetime.now()
+        })
+        
+        return {"status": "processed"}
+    ```
+  </Accordion>
+
+  <Accordion title="Error Handling">
+    - Return 200 OK for successful processing
+    - Return 500 for processing errors (triggers retry)
+    - Log all webhook attempts
+    - Implement retry logic for failed processing
+    - Monitor webhook failures
+  </Accordion>
+</AccordionGroup>
+
+## Testing Webhooks
+
+### Local Testing with ngrok
+
+Test webhooks locally using ngrok:
+
+```bash
+# Install ngrok
+brew install ngrok
+
+# Start your local server
+python app.py  # Running on localhost:5000
+
+# Create tunnel
+ngrok http 5000
+
+# Use the ngrok URL in Tonder dashboard
+# https://abc123.ngrok.io/webhooks/tonder
+```
+
+### Manual Testing
+
+Send test webhooks from Tonder dashboard:
+
+1. Go to **Settings** → **Webhooks**
+2. Click on your webhook
+3. Click **Send Test Event**
+4. Select event type
+5. Review your server logs
+
+### Test Event Examples
+
+```json Test Payment Success
+{
+  "event": "payment.completed",
+  "timestamp": "2024-07-26T10:30:00Z",
+  "data": {
+    "id": "test_550e8400-e29b-41d4-a716-446655440000",
+    "status": "success",
+    "amount": 100.00,
+    "currency": "MXN",
+    "client_reference": "test-order-123"
+  }
+}
+```
+
+## Webhook Retries
+
+Tonder automatically retries failed webhooks:
+
+| Attempt | Delay |
+|---------|-------|
+| 1st retry | 5 minutes |
+| 2nd retry | 30 minutes |
+| 3rd retry | 2 hours |
+| 4th retry | 6 hours |
+| 5th retry | 24 hours |
+
+<Warning>
+After 5 failed attempts, the webhook is marked as failed and retries stop. Monitor your webhook endpoint to catch failures early.
+</Warning>
+
+## Monitoring Webhooks
+
+Implement monitoring and alerting:
+
+```python
+import logging
+from datetime import datetime, timedelta
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger('webhooks')
+
+def log_webhook_event(event_type, data, success):
+    """Log webhook processing"""
+    logger.info(f"Webhook: {event_type}", extra={
+        "event": event_type,
+        "transaction_id": data.get('id'),
+        "success": success,
+        "timestamp": datetime.now()
+    })
+
+def check_webhook_health():
+    """Monitor webhook processing health"""
+    
+    # Check for processing failures
+    one_hour_ago = datetime.now() - timedelta(hours=1)
+    failures = db.webhook_logs.count({
+        "success": False,
+        "timestamp": {"$gte": one_hour_ago}
+    })
+    
+    if failures > 10:
+        alert_ops_team(f"High webhook failure rate: {failures} in last hour")
+    
+    # Check for missing webhooks
+    pending_payments = db.transactions.count({"status": "pending"})
+    if pending_payments > 100:
+        alert_ops_team(f"High pending payment count: {pending_payments}")
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Response Quickly">
+    - Respond with 200 OK immediately
+    - Process webhooks asynchronously if needed
+    - Don't perform long-running tasks in webhook handler
+    - Use background jobs for complex processing
+  </Accordion>
+
+  <Accordion title="Validate Data">
+    - Verify all required fields exist
+    - Validate data types and formats
+    - Check transaction amounts match
+    - Verify customer information
+  </Accordion>
+
+  <Accordion title="Database Updates">
+    - Use transactions for critical updates
+    - Implement proper locking
+    - Handle race conditions
+    - Keep audit trail of changes
+  </Accordion>
+
+  <Accordion title="Customer Notifications">
+    - Send confirmation emails on success
+    - Notify on payment failures
+    - Update order status in real-time
+    - Provide clear next steps
+  </Accordion>
+</AccordionGroup>
+
+## Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| **Webhooks not received** | Check URL is publicly accessible, verify HTTPS, check firewall |
+| **Signature verification fails** | Verify webhook secret, check payload encoding |
+| **Duplicate events** | Implement idempotency, check webhook ID |
+| **Events out of order** | Use timestamps, don't assume order |
+| **Missing events** | Check webhook configuration, review logs |
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Check Status" icon="magnifying-glass" href="/mock-direct-api/guides/check-transaction-status">
+    Verify payment status
+  </Card>
+  <Card title="Create Payment" icon="credit-card" href="/mock-direct-api/guides/create-payment-card">
+    Process payments
+  </Card>
+  <Card title="Refund Payment" icon="rotate-left" href="/mock-direct-api/guides/refund-card-payment">
+    Handle refunds
+  </Card>
+  <Card title="Testing" icon="flask" href="/mock-direct-api/testing">
+    Test webhook flows
+  </Card>
+</CardGroup>
+
+## Related Resources
+
+- [Webhooks Best Practices](/direct-integration/webhooks/best-practices)
+- [Webhook Delivery](/direct-integration/webhooks/delivery-and-retry)
+- [API Reference](/reference/webhooks)
+
