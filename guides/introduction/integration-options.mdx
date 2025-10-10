@@ -1,36 +1,42 @@
 ---
 title: "Choose Your Integration"
-description: "Explore Tonder's integration options to find the best fit for your business. Compare SDKs, hosted solutions, and direct API integration."
+'og:description': "Explore Tonder's integration options to find the best fit for your business. Compare SDKs, hosted solutions, and direct API integration."
 ---
 
 Selecting the right integration option to provide payment options to your clients is crucial to ensure the user and developer experience and the project's maintainability. Choosing the appropriate SDK impacts several key aspects of your business:
 
-- Development Time
-- User Experience
-- Scalability
+- Development time and implementation speed.
+- User experience and checkout conversion rates.
+- Long-term scalability and maintenance requirements.
 
 ## Tonder Integration Options
 
 The following table summarizes the characteristics of the available integration options provided by Tonder.
 
-| Feature| [Lite SDK](#lite-sdk)| [Full SDK](#full-sdk)| [API Integration](#api-integration)| [E-commerce Plugins](#e-commerce-plugins)|
-|------------------------|----------------------------------------------|--------------------------------------|----------------------------------------|----------------------------------------|
-| Target audience    | Merchants looking for more customization   | Projects needing quick implementation| PCI-certified businesses looking for complete control over the integration | Businesses using e-commerce platforms looking to offer more payment options |
-| Customization      | Extensive customization options             | Limited customization                | Complete customization                | Limited to platform|
-| Flexibility        | High flexibility in design and functionality | Pre-built, less flexible             | High flexibility                       | Depends on the e-commerce platform                    |
-| Ease of use        | Requires more development effort            | Simplifies development with pre-built elements | Requires a complete development of front and back end, in addition to the PCI certification and AOC    | Simple to integrate with minimal configuration |
-| User interface     | Customizable                                 | Ready-to-use UI                      | Customizable                            | Depends on the e-commerce platform           |
-| Saved card | Not included                                | Included                             | Depends on implementation               | Depends on platform                    |
-| PCI Compliance     | Included                                     | Included                             | Requires PCI certification              | Included                               |
+| Feature| [SDKs](#sdks)| [Direct Integration](#direct-integration-api)| [E-commerce Plugins](#e-commerce-plugins)|
+|------------------------|----------------------------------------------|----------------------------------------|----------------------------------------|
+| Target audience    | Developers needing flexible payment integration with varying customization levels | PCI-certified businesses looking for complete control over the integration | Businesses using e-commerce platforms looking to offer more payment options |
+| Customization      | Lite: Extensive / Full: Limited             | Complete customization                | Limited to platform|
+| Flexibility        | Lite: High / Full: Pre-built                 | High flexibility                       | Depends on the e-commerce platform                    |
+| Ease of use        | Lite: Requires more effort / Full: Quick implementation | Requires complete development of front and back end, plus PCI certification    | Simple to integrate with minimal configuration |
+| User interface     | Lite: Customizable / Full: Ready-to-use UI   | Customizable                            | Depends on the e-commerce platform           |
+| Saved card | Full SDK only                               | Depends on implementation               | Depends on platform                    |
+| PCI Compliance     | Included                                     | Requires PCI certification              | Included                               |
 
 Below, you will find additional details from each available integration.
 
-### Lite SDK
+### SDKs
 
-- **Customization**: The Lite SDK offers extensive customization options for components, allowing developers to tailor the user experience to specific needs.
-- **Target Audience**: Ideal for merchants who require specific, custom implementations and have the resources to design and integrate custom UI components.
-- **Flexibility**: This SDK is highly flexible in terms of design and functionality, providing developers with the tools to create a unique and tailored experience.
-- **PCI Compliance**: The Lite SDK includes PCI capabilities, ensuring secure transactions and compliance with payment security standards.
+Tonder offers two SDK options to integrate payment processing into your application, each designed for different development needs and customization levels.
+
+<Tabs>
+<Tab title="Lite SDK">
+The Lite SDK is designed for merchants who need maximum control over their payment interface and are willing to invest development resources for a fully customized solution.
+
+- The Lite SDK offers extensive customization options for components, allowing developers to tailor the user experience to specific needs.
+- Ideal for merchants who require specific, custom implementations and have the resources to design and integrate custom UI components.
+- This SDK is highly flexible in terms of design and functionality, providing developers with the tools to create a unique and tailored experience.
+- The Lite SDK includes PCI capabilities, ensuring secure transactions and compliance with payment security standards.
 
 <CardGroup cols={3}>
   <Card title="JS" icon="js" href="/integration/sdks/web/js-sdk"/>
@@ -54,14 +60,16 @@ Below, you will find additional details from each available integration.
 </defs>
 </svg>} href="/integration/sdks/mobile/flutter/flutter-sdk-lite"/>
 </CardGroup>
+</Tab>
 
-### Full SDK
+<Tab title="Full SDK">
+The Full SDK provides a pre-built payment interface that accelerates implementation while maintaining security and compliance standards.
 
-- **User Interface**: The Full SDK comes with a straightforward, ready-to-use UI, enabling developers to deploy payment solutions more quickly.
-- **Ease of Use**: It simplifies the development process with pre-built elements and standard configurations, reducing the need for extensive coding and design.
-- **Saved Cards Feature**: This SDK includes functionality to handle saved cards, which enhances user convenience and encourages user retention.
-- **Target Audience**: Best suited for projects that need quick implementation with less emphasis on customization. It's ideal for merchants looking to integrate a payment solution fast.
-- **PCI Compliance**: Similar to the Lite SDK, the Full SDK also includes PCI capabilities, ensuring secure transactions.
+- The Full SDK comes with a straightforward, ready-to-use UI, enabling developers to deploy payment solutions more quickly.
+- It simplifies the development process with pre-built elements and standard configurations, reducing the need for extensive coding and design.
+- This SDK includes functionality to handle saved cards, which enhances user convenience and encourages user retention.
+- Best suited for projects that need quick implementation with less emphasis on customization. It's ideal for merchants looking to integrate a payment solution fast.
+- Similar to the Lite SDK, the Full SDK also includes PCI capabilities, ensuring secure transactions.
 
 <CardGroup cols={3}>
 <Card title="Ionic SDK Full" icon={<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 100 100" fill="none">
@@ -84,24 +92,31 @@ Below, you will find additional details from each available integration.
 </defs>
 </svg>} href="/integration/sdks/mobile/flutter/flutter-sdk-full"/>
 </CardGroup>
+</Tab>
+</Tabs>
 
-### API Integration
+### Direct Integration (API)
 
-- **Requirements**: API integration requires the merchant company to be PCI-certified. The merchant also needs to forward their Attestation of Compliance (AOC) certification to Tonder before beginning the implementation.
-- **Customization**: The merchant can completely customize the front and back end since the integration is a back-to-back implementation.
-- **Flexibility**: Provides high flexibility in terms of design and functionality, allowing developers to create a tailored experience.
-- **Target Audience**: Best suited for merchants that are PCI-certified and need a highly customized solution.
+Direct API integration offers complete control over both frontend and backend implementation, suitable for businesses that require custom payment flows and have the necessary security certifications.
+
+- API integration requires the merchant company to be PCI-certified. The merchant also needs to forward their Attestation of Compliance (AOC) certification to Tonder before beginning the implementation.
+- The merchant can completely customize the front and back end since the integration is a back-to-back implementation.
+- Provides high flexibility in terms of design and functionality, allowing developers to create a tailored experience.
+- Best suited for merchants that are PCI-certified and need a highly customized solution.
 
 <CardGroup cols={3}>
-<Card title="API Reference" iconType="solid" icon="square-terminal" href="/reference/overview"/>
+<Card title="Direct Integration" iconType="solid" icon="square-terminal" href="/direct-integration/tonder-direct"/>
 </CardGroup>
+
 ### E-commerce Plugins
 
-- **Ease of Implementation**: Tonder's plugins are designed to integrate easily into major e-commerce platforms with minimal configuration, without writing any code.
-- **User Experience**: Improves the checkout process and helps businesses accept more payment methods.
-- **PCI Compliance**: Plugins are PCI-compliant, ensuring secure transactions.
-- **Platform Dependence**: The most evident disadvantage is that plugin features depend on the platform, and some features may not be available.
-- **Target Audience**: Ideal for businesses looking for quick and easy integration into their existing e-commerce platforms.
+Tonder's plugins provide the fastest path to accepting payments for businesses using popular e-commerce platforms, requiring no custom development.
+
+- Tonder's plugins are designed to integrate easily into major e-commerce platforms with minimal configuration, without writing any code.
+- Improves the checkout process and helps businesses accept more payment methods.
+- Plugins are PCI-compliant, ensuring secure transactions.
+- The most evident disadvantage is that plugin features depend on the platform, and some features may not be available.
+- Ideal for businesses looking for quick and easy integration into their existing e-commerce platforms.
 
 <CardGroup cols={3}>
   <Card title="Magento" icon="magento" href="/guides/plugins/magento"/>
@@ -115,19 +130,19 @@ When deciding between the Tonder integration options, consider the following que
 
 <AccordionGroup>
   <Accordion title="How much customization do you need?">
-    For a highly tailored user experience, consider the Lite SDK or API integration. For faster, standardized implementations, the Full SDK or e-commerce plugins are more suitable.
+    For a highly tailored user experience, consider the Lite SDK or Direct Integration (API). For faster, standardized implementations, the Full SDK or e-commerce plugins are more suitable.
   </Accordion>
 
   <Accordion title="What is your timeline?">
-    If you need to deploy quickly, the Full SDK or e-commerce plugins offer a faster path to implementation.
+    If you need to deploy quickly, the Full SDK or e-commerce plugins offer a faster path to implementation. Lite SDK and Direct Integration require more development time.
   </Accordion> 
 
   <Accordion title="What resources are available?">
-    If you have the resources for custom development and integration, the Lite SDK or API integration provides the flexibility you need. For teams with limited resources, the Full SDK or e-commerce plugins simplify the process.
+    If you have the resources for custom development and integration, the Lite SDK or Direct Integration provides the flexibility you need. For teams with limited resources, the Full SDK or e-commerce plugins simplify the process.
   </Accordion> 
 
   <Accordion title="What are your security requirements?">
-    If you are using API integration, ensure you have the necessary PCI certification and AOC. The other options include PCI compliance as part of the package.
+    If you are using Direct Integration (API), ensure you have the necessary PCI certification and AOC. The SDKs and e-commerce plugins include PCI compliance as part of the package.
   </Accordion> 
 </AccordionGroup>
 

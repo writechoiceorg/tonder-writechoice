@@ -1,11 +1,9 @@
 ---
 title: "Disputes"
-description: "Learn how disputes (chargebacks) work, how to manage them in the Tonder Dashboard, and best practices for submitting evidence to challenge them."
+'og:description': "Learn how disputes (chargebacks) work, how to manage them in the Tonder Dashboard, and best practices for submitting evidence to challenge them."
 ---
 
-## What is a Dispute?
-
-A **dispute**, also known as a chargeback, occurs when a customer contacts their card issuer (bank) to question or raise a concern about a payment. This action initiates a formal process on the card network, which results in an immediate reversal of the payment.
+A dispute, also known as a chargeback, occurs when a customer contacts their card issuer (bank) to question or raise a concern about a payment. This action initiates a formal process on the card network, which results in an immediate reversal of the payment.
 
 When a dispute is initiated, the transaction amount and an associated dispute fee are deducted first from Tonder and subsequently from your account balance.
 
@@ -13,19 +11,34 @@ When a dispute is initiated, the transaction amount and an associated dispute fe
 
 The dispute process follows a standardised flow across card networks.
 
+<Steps>
+<Step title="Cardholder Initiates Dispute">
+The customer contacts their bank to dispute a charge.
+</Step>
 
-1.  **Cardholder Initiates Dispute**: The customer contacts their bank to dispute a charge.
-2.  **Payment Reversal**: The card network immediately reverses the payment.
-3.  **Funds Deducted**: The payment amount and a dispute fee are deducted from your Tonder account balance.
-4.  **Evidence Submission**: You have the opportunity to accept the dispute or challenge it by submitting evidence.
-5.  **Bank Resolution**: The issuing bank reviews the evidence and makes a final decision, which typically takes 2-3 months.
+<Step title="Payment Reversal">
+The card network immediately reverses the payment.
+</Step>
+
+<Step title="Funds Deducted">
+The payment amount and a dispute fee are deducted from your Tonder account balance.
+</Step>
+
+<Step title="Evidence Submission">
+You have the opportunity to accept the dispute or challenge it by submitting evidence.
+</Step>
+
+<Step title="Bank Resolution">
+The issuing bank reviews the evidence and makes a final decision, which typically takes 2-3 months.
+</Step>
+</Steps>
 
 ## Managing Disputes in Tonder
 
 You can handle disputes securely and efficiently directly from the **Disputes** page in your Tonder Dashboard. For each dispute, you have two options:
 
-* **Accept**: Acknowledge the cardholder's claim as valid. This closes the dispute, and the funds are permanently returned to the customer.
-* **Challenge**: Contest the dispute by providing compelling evidence to the card issuer to prove the transaction was legitimate.
+- Acknowledge the cardholder's claim as valid by accepting the dispute. This closes the dispute, and the funds are permanently returned to the customer.
+- Contest the dispute by providing compelling evidence to the card issuer to prove the transaction was legitimate.
 
 <Note>
   The evidence submission process in the Dashboard is exclusively for transactions processed using **Tonder Online Payments**. For other Payment Service Providers (PSPs), you must manage disputes through their respective admin panels.
@@ -33,17 +46,19 @@ You can handle disputes securely and efficiently directly from the **Disputes** 
 
 ### Timing and Deadlines
 
-* **Initiation Window**: Cardholders can typically initiate a dispute up to **120 days** after the original transaction date.
-* **Evidence Submission**: It's highly recommended to submit your evidence within **10 calendar days** of receiving the dispute notification to ensure it's processed in time.
-* **Resolution Window**: After you submit evidence, the issuing bank usually takes **60 to 75 days** to review it and make a final decision. The entire process can take 2-3 months from start to finish.
+Understanding the timeline for disputes helps you respond appropriately and protect your business interests:
+
+- Cardholders can typically initiate a dispute up to 120 days after the original transaction date.
+- It's highly recommended to submit your evidence within 10 calendar days of receiving the dispute notification to ensure it's processed in time.
+- After you submit evidence, the issuing bank usually takes 60 to 75 days to review it and make a final decision. The entire process can take 2-3 months from start to finish.
 
 <Warning>
 Businesses cannot accelerate the dispute resolution timeline, as it is dictated by card network rules and bank procedures.
 </Warning>
 
-### Dispute Fees
-
-Dispute fees are defined in your contract with Tonder. These fees are deducted from your reserves whenever a cardholder initiates a dispute, regardless of the outcome.
+<Note>
+**Dispute Fees**: Dispute fees are defined in your contract with Tonder. These fees are deducted from your reserves whenever a cardholder initiates a dispute, regardless of the outcome.
+</Note>
 
 ## Dispute Reason Codes
 
@@ -53,44 +68,53 @@ Payment networks assign a specific reason code to each dispute. Understanding th
   <Tab title="Visa">
     <AccordionGroup>
       <Accordion title="10.4 Fraudulent Transaction — Card-Absent Environment">
-        **Reason**: The customer claims they did not authorise the transaction.
-        **How to Challenge**: Provide proof of 3D Secure authentication or a signed proof of delivery for physical goods.
+        The customer claims they did not authorise the transaction.
+        
+        To challenge this dispute, provide proof of 3D Secure authentication or a signed proof of delivery for physical goods.
       </Accordion>
       <Accordion title="12.6 Duplicate Processing">
-        **Reason**: The customer claims they were charged multiple times for a single transaction.
-        **How to Challenge**: Provide sales drafts for each transaction with an explanation of the items purchased or show that a credit was already issued.
+        The customer claims they were charged multiple times for a single transaction.
+        
+        To challenge this dispute, provide sales drafts for each transaction with an explanation of the items purchased or show that a credit was already issued.
       </Accordion>
       <Accordion title="13.1 Services Not Provided or Merchandise Not Received">
-        **Reason**: The customer claims they never received the merchandise or service.
-        **How to Challenge**: Provide proof that services were rendered or proof of delivery for merchandise. To prevent this, charge customers only after shipping goods or providing the service.
+        The customer claims they never received the merchandise or service.
+        
+        To challenge this dispute, provide proof that services were rendered or proof of delivery for merchandise. To prevent this, charge customers only after shipping goods or providing the service.
       </Accordion>
       <Accordion title="13.3 Not as Described or Defective Merchandise/Services">
-        **Reason**: The merchandise was damaged, did not match the description, or was of poor quality.
-        **How to Challenge**: Provide evidence that the item matched the description, that the issue was corrected, or that the customer never attempted a return.
+        The merchandise was damaged, did not match the description, or was of poor quality.
+        
+        To challenge this dispute, provide evidence that the item matched the description, that the issue was corrected, or that the customer never attempted a return.
       </Accordion>
       <Accordion title="13.7 Cancelled Merchandise/Services">
-        **Reason**: The customer claims they cancelled the service or returned merchandise but did not receive a credit.
-        **How to Challenge**: Provide proof that a credit was issued or documentation explaining why a credit was not due.
+        The customer claims they cancelled the service or returned merchandise but did not receive a credit.
+        
+        To challenge this dispute, provide proof that a credit was issued or documentation explaining why a credit was not due.
       </Accordion>
     </AccordionGroup>
   </Tab>
   <Tab title="Mastercard">
     <AccordionGroup>
       <Accordion title="4837 No Cardholder Authorization">
-        **Reason**: The customer claims they did not authorize the transaction.
-        **How to Challenge**: Provide proof of 3D Secure authentication or a signed proof of delivery for physical goods.
+        The customer claims they did not authorize the transaction.
+        
+        To challenge this dispute, provide proof of 3D Secure authentication or a signed proof of delivery for physical goods.
       </Accordion>
       <Accordion title="4841 Cancelled Recurring or Digital Goods Transaction">
-        **Reason**: The customer claims they cancelled a recurring service but was still charged.
-        **How to Challenge**: Provide evidence of the cancellation date or proof that a credit was issued. Promptly remove cancelled customers from billing cycles to prevent this.
+        The customer claims they cancelled a recurring service but was still charged.
+        
+        To challenge this dispute, provide evidence of the cancellation date or proof that a credit was issued. Promptly remove cancelled customers from billing cycles to prevent this.
       </Accordion>
       <Accordion title="4853 Cardholder Dispute — Defective/Not as Described">
-        **Reason**: The merchandise or service did not match the description provided at the time of purchase.
-        **How to Challenge**: Provide evidence that the item matched the description, that the customer never attempted a return, or that the issue was corrected.
+        The merchandise or service did not match the description provided at the time of purchase.
+        
+        To challenge this dispute, provide evidence that the item matched the description, that the customer never attempted a return, or that the issue was corrected.
       </Accordion>
       <Accordion title="4855 Goods or Services Not Provided">
-        **Reason**: The customer claims they paid for items but never received them.
-        **How to Challenge**: Provide proof of delivery for the merchandise or evidence that a credit was issued. It's best practice to only charge cards after shipment.
+        The customer claims they paid for items but never received them.
+        
+        To challenge this dispute, provide proof of delivery for the merchandise or evidence that a credit was issued. It's best practice to only charge cards after shipment.
       </Accordion>
     </AccordionGroup>
   </Tab>
@@ -98,37 +122,45 @@ Payment networks assign a specific reason code to each dispute. Understanding th
 
 ## Building Strong Evidence
 
-When challenging a dispute, the quality of your evidence is critical. Effective evidence typically includes:
+When challenging a dispute, the quality and relevance of your evidence can make the difference between winning and losing the case. The type of evidence needed depends on the dispute reason code and the customer's claim.
 
-### For Fraud Disputes
+<AccordionGroup>
+<Accordion title="For Fraud Disputes">
+When challenging fraud-related disputes, provide technical evidence that validates the customer's identity and authorization:
 
-- **3D Secure authentication logs**: Proof that the customer completed authentication
-- **AVS (Address Verification System) match**: Confirmation that billing address matched
-- **CVV verification**: Proof that security code was provided and verified
-- **IP address and geolocation**: Show the transaction originated from customer's location
-- **Device fingerprint**: Technical data linking the device to the customer
-- **Previous purchase history**: Evidence of successful past transactions
+- Proof that the customer completed 3D Secure authentication.
+- Confirmation that billing address matched through AVS (Address Verification System).
+- Proof that security code was provided and verified (CVV verification).
+- Show the transaction originated from customer's location using IP address and geolocation data.
+- Technical data linking the device to the customer (device fingerprint).
+- Evidence of successful past transactions from the same customer.
+</Accordion>
 
-### For Product/Service Disputes
+<Accordion title="For Product/Service Disputes">
+For disputes claiming products weren't received or didn't match the description, documentation proving fulfillment is essential:
 
-- **Proof of delivery**: Signed delivery receipts or tracking information
-- **Product descriptions**: Screenshots showing accurate product representation
-- **Communication logs**: Emails or messages with the customer
-- **Terms and conditions**: Proof customer agreed to your policies
-- **Cancellation policy**: Documentation of refund and return policies
-- **Service records**: Proof that services were rendered as described
+- Signed delivery receipts or tracking information proving the customer received the items.
+- Screenshots showing accurate product representation on your site.
+- Emails or messages exchanged with the customer.
+- Proof customer agreed to your terms and conditions.
+- Documentation of your refund and return policies.
+- Proof that services were rendered as described.
+</Accordion>
 
-### For Subscription Disputes
+<Accordion title="For Subscription Disputes">
+When dealing with subscription-related chargebacks, demonstrate clear customer consent and proper notice:
 
-- **Signup records**: Proof of customer enrollment
-- **Recurring billing agreement**: Customer consent for recurring charges
-- **Cancellation policy**: Clear documentation of how to cancel
-- **Usage logs**: Proof customer used the service after the disputed charge
-- **Notification records**: Proof of billing reminders sent to customer
+- Proof of customer enrollment in the subscription.
+- Customer consent for recurring charges (recurring billing agreement).
+- Clear documentation of how to cancel the subscription.
+- Proof customer used the service after the disputed charge.
+- Proof of billing reminders sent to customer prior to each charge.
+</Accordion>
+</AccordionGroup>
 
 ## Disputes vs. Refunds
 
-Understanding the difference helps you choose the appropriate action:
+Understanding the key differences between disputes and refunds helps you choose the appropriate action for each situation:
 
 | Aspect | Refund | Dispute |
 |--------|--------|---------|
@@ -145,29 +177,23 @@ When possible, resolve customer issues directly through refunds to avoid the dis
 
 ## Preventing Disputes
 
-Proactive measures to reduce dispute rates:
+Taking proactive measures can significantly reduce your dispute rates and protect your business reputation. Here are key strategies:
 
-1. **Clear communication**: Provide accurate product descriptions and transparent policies
-2. **Fast customer service**: Respond quickly to customer inquiries and complaints
-3. **Recognisable billing descriptor**: Ensure your business name appears clearly on statements
-4. **Delivery confirmation**: Use tracked shipping with signature confirmation
-5. **3D Secure authentication**: Implement 3DS2 for enhanced fraud protection
-6. **Fraud screening**: Use Tonder's fraud detection tools
-7. **Clear refund policy**: Make return and refund policies easy to find and understand
-8. **Proactive refunds**: Resolve issues with voluntary refunds before customers dispute
+- Provide accurate product descriptions, transparent policies, and clear refund terms that customers can easily find and understand.
+- Respond quickly to customer inquiries and resolve issues with voluntary refunds before customers escalate to their bank.
+- Ensure your business name appears clearly on customer statements to avoid confusion.
+- Use tracked shipping with signature confirmation for physical goods.
+- Implement 3DS2 authentication and leverage Tonder's fraud detection tools for enhanced security.
 
-## Impact on Your Business
+<Warning>
+**Impact on Your Business**
 
-High dispute rates can have serious consequences:
-
-- **Increased fees**: Higher dispute rates may result in increased processing fees
-- **Account holds**: Excessive disputes can trigger reserve requirements or account reviews
-- **Payment processor penalties**: Very high rates may result in account termination
-- **Reputation damage**: Customer disputes can indicate service or product issues
-
-**Industry benchmarks**: Maintain dispute rates below 0.9% of transaction volume to avoid penalties.
+High dispute rates can result in increased processing fees, reserve requirements, account reviews, or even account termination by payment processors. They can also indicate underlying service or product issues that damage your reputation. Maintain dispute rates below 0.9% of transaction volume to avoid penalties.
+</Warning>
 
 ## Next Steps
+
+Learn more about managing payments and preventing disputes with these related resources:
 
 <CardGroup cols={2}>
   <Card title="Payments" href="/guides/core-concepts/payment-lifecycle/payments">

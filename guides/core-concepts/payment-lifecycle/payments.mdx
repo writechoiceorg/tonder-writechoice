@@ -1,9 +1,7 @@
 ---
 title: "Payments"
-description: "Learn about the payment authorization and confirmation process in Tonder, from initial request to successful transaction completion."
+'og:description': "Learn about the payment authorization and confirmation process in Tonder, from initial request to successful transaction completion."
 ---
-
-## Overview
 
 A payment represents the initial stage of the transaction lifecycle where a customer initiates a purchase and the payment is authorized. Understanding how payments work in Tonder is essential for integrating payment processing into your application and ensuring a smooth checkout experience for your customers.
 
@@ -11,30 +9,30 @@ A payment represents the initial stage of the transaction lifecycle where a cust
 
 When a customer makes a purchase, Tonder processes the payment through the following stages:
 
-### 1. Payment Initiation
+<Steps>
+<Step title="Payment Initiation">
+The customer provides their payment information through your checkout interface. This can include card details (card number, CVV, expiry date, and cardholder name), alternative payment methods (SPEI, OXXO, digital wallets), or previously tokenized cards and payment instruments.
+</Step>
 
-The customer provides their payment information through your checkout interface. This can include:
-
-- **Card details**: Card number, CVV, expiry date, and cardholder name
-- **Alternative payment methods**: SPEI, OXXO, digital wallets, and other local payment options
-- **Saved payment methods**: Previously tokenized cards or payment instruments
-
-### 2. Payment Authorization
-
+<Step title="Payment Authorization">
 Tonder sends the payment request to the appropriate payment processor or acquiring bank. The processor validates the payment details and checks:
 
-- Available funds or credit limit
-- Card validity and expiry status
-- Fraud detection and risk assessment
-- Customer authentication (including 3D Secure when required)
+- Available funds or credit limit.
+- Card validity and expiry status.
+- Fraud detection and risk assessment.
+- Customer authentication, including 3D Secure when required.
+</Step>
 
-### 3. Response Handling
+<Step title="Response Handling">
+The payment processor returns an authorization response with one of the following outcomes:
 
-The payment processor returns an authorization response, which can be:
-
-- **Authorized**: The payment has been approved and funds are reserved
-- **Declined**: The payment was rejected (insufficient funds, invalid card, etc.)
-- **Pending**: The payment requires additional action (3DS authentication, manual review)
+| Response | Description |
+|----------|-------------|
+| Authorized | The payment has been approved and funds are reserved |
+| Declined | The payment was rejected due to insufficient funds, invalid card, or other issues |
+| Pending | The payment requires additional action such as 3DS authentication or manual review |
+</Step>
+</Steps>
 
 ## Payment Statuses
 
@@ -59,15 +57,21 @@ Throughout the payment process, transactions can have different statuses:
 
 Tonder supports a wide range of payment methods to cater to different customer preferences:
 
-### Card Payments
-
+<AccordionGroup>
+<Accordion title="Card Payments">
 Accept payments from major card networks including Visa, Mastercard, American Express, and Carnet. Card payments are typically processed synchronously, providing immediate authorization results.
+</Accordion>
 
-### Alternative Payment Methods
+<Accordion title="Alternative Payment Methods">
+Beyond traditional cards, Tonder supports various local payment methods popular across Latin America:
 
-- **Bank Transfers (SPEI)**: Direct bank-to-bank transfers popular in Mexico
-- **Cash Payments (OXXO)**: Voucher-based payments at convenience stores
-- **Digital Wallets**: Mercado Pago and other local wallet solutions
+| Payment Method | Description |
+|----------------|-------------|
+| Bank Transfers (SPEI) | Direct bank-to-bank transfers popular in Mexico |
+| Cash Payments (OXXO) | Voucher-based payments at convenience stores |
+| Digital Wallets | Mercado Pago and other local wallet solutions |
+</Accordion>
+</AccordionGroup>
 
 <Tip>
 For detailed information about each payment method and country-specific availability, see the [Available Payment Methods](/guides/payment-methods/available-payment-methods) page.
@@ -77,25 +81,22 @@ For detailed information about each payment method and country-specific availabi
 
 Different payment methods have different processing flows:
 
-### Synchronous Payments
-
-Card payments are typically synchronous. You receive an immediate response with the final status (`authorized` or `declined`) in the initial API response. This allows for instant confirmation at checkout.
-
-### Asynchronous Payments
-
-Alternative payment methods like SPEI and OXXO are asynchronous. The initial status will be `pending` because they require the customer to take further action (complete the bank transfer or pay at a store). You must use webhooks or status polling to know when the payment is completed.
+- Synchronous payments (cards) provide an immediate response with the final status (`authorized` or `declined`) in the initial API response. This allows for instant confirmation at checkout.
+- Asynchronous payments (SPEI, OXXO) return an initial status of `pending` because they require the customer to take further action (complete the bank transfer or pay at a store). You must use webhooks or status polling to know when the payment is completed.
 
 ## Best Practices
 
 When implementing payments with Tonder, follow these best practices:
 
-1. **Always validate the response**: Check both the `id` and `status` fields in the API response
-2. **Implement webhooks**: Use webhooks for asynchronous payment methods to receive real-time updates
-3. **Handle errors gracefully**: Provide clear error messages to customers when payments fail
-4. **Store transaction IDs**: Save the transaction ID for future reference and reconciliation
-5. **Test thoroughly**: Use test cards and sandbox environment before going live
+-  Always validate the response by checking both the `id` and `status` fields in the API response.
+- Implement webhooks for asynchronous payment methods to receive real-time updates.
+- Handle errors gracefully by providing clear error messages to customers when payments fail.
+- Store transaction IDs for future reference and reconciliation.
+- Test thoroughly using test cards and sandbox environment before going live.
 
 ## Next Steps
+
+Continue learning about the payment lifecycle by exploring these related topics:
 
 <CardGroup cols={2}>
   <Card title="3D Secure Payments" href="/guides/core-concepts/payment-lifecycle/3ds-payments">

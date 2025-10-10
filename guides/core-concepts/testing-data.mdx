@@ -1,6 +1,6 @@
 ---
 title: "Testing Data"
-description: "Access test cards and data for validating your payment integrations in Tonder's environment. Use these test cards for simulating various payment scenarios including 3D Secure authentication."
+'og:description': "Access test cards and data for validating your payment integrations in Tonder's environment. Use these test cards for simulating various payment scenarios including 3D Secure authentication."
 ---
 
 This page provides a comprehensive list of test cards for Visa, Mastercard, and American Express, along with their 3-D Secure results and transaction outcomes. Use these test cards for simulating various payment scenarios when testing your integration with Tonder.
@@ -20,6 +20,8 @@ This page provides a comprehensive list of test cards for Visa, Mastercard, and 
 
 ## Visa
 
+Use these Visa test card numbers to simulate different payment scenarios and authentication flows:
+
 | Card Number         | 3-D Secure Result                                          | Transaction Result           |
 |---------------------|------------------------------------------------------------|------------------------------|
 | 4000 0000 0000 0085 | 3-D Secure v2, challenge flow, full authentication         | Payment has CONFIRMED status |
@@ -31,6 +33,8 @@ This page provides a comprehensive list of test cards for Visa, Mastercard, and 
 | 4444 4444 4444 9777 | No 3-D Secure                                               | Payment has DECLINED status  |
 
 ## Mastercard
+
+Use these Mastercard test card numbers to simulate various transaction outcomes:
 
 | Card Number         | 3-D Secure Result                                          | Transaction Result           |
 |---------------------|------------------------------------------------------------|------------------------------|
@@ -44,6 +48,8 @@ This page provides a comprehensive list of test cards for Visa, Mastercard, and 
 
 ## American Express (Amex)
 
+Use these American Express test card numbers for testing Amex-specific transactions:
+
 | Card Number         | 3-D Secure Result                                          | Transaction Result           |
 |---------------------|------------------------------------------------------------|------------------------------|
 | 3700 0000 0000 085  | 3-D Secure v2, challenge flow, full authentication         | Payment has CONFIRMED status |
@@ -56,33 +62,39 @@ This page provides a comprehensive list of test cards for Visa, Mastercard, and 
 
 ## Understanding Test Scenarios
 
+Understanding what each test card simulates helps you verify your integration handles all payment scenarios correctly.
+
 ### 3D Secure Testing
 
 The test cards above allow you to simulate different 3D Secure scenarios:
 
-- **Challenge flow**: Requires customer interaction to complete authentication
-- **Frictionless flow**: Authentication happens behind the scenes without customer interaction
-- **No 3-D Secure**: Transactions processed without 3D Secure authentication
+- A challenge flow that requires customer interaction to complete authentication.
+- A frictionless flow that allows authentication to happen behind the scenes without customer interaction.
+- Transactions processed without 3D Secure authentication.
 
 ### Transaction Statuses
 
-Test cards produce different transaction outcomes:
+Each test card is designed to return a specific transaction status, allowing you to test how your application handles different outcomes:
 
-- **CONFIRMED**: Transaction successfully completed and confirmed
-- **AUTHORIZED**: Payment has been authorised but not yet captured
-- **DECLINED**: Payment was rejected by the card issuer
+| Status | Description |
+|--------|-------------|
+| CONFIRMED | Transaction successfully completed and confirmed |
+| AUTHORIZED | Payment has been authorised but not yet captured |
+| DECLINED | Payment was rejected by the card issuer |
 
 ## Best Practices for Testing
 
-When testing your Tonder integration:
+Following these best practices ensures comprehensive testing coverage and helps identify issues before going live:
 
-1. **Test all scenarios**: Use cards that trigger both successful and declined transactions
-2. **Verify 3DS flows**: Test both challenge and frictionless authentication flows
-3. **Check status handling**: Ensure your application properly handles all transaction statuses
-4. **Test error cases**: Use declined cards to verify your error handling logic
-5. **Validate webhooks**: If using webhooks, confirm they trigger correctly for all scenarios
+- Test all scenarios using cards that trigger both successful and declined transactions.
+- Verify 3DS flows by testing both challenge and frictionless authentication flows.
+- Check status handling to ensure your application properly handles all transaction statuses.
+- Test error cases using declined cards to verify your error handling logic.
+- Validate webhooks to confirm they trigger correctly for all scenarios (if using webhooks).
 
 ## Next Steps
+
+Ready to start testing? Explore these resources to begin implementing and validating your integration:
 
 <CardGroup cols={2}>
   <Card title="Payments" href="/guides/core-concepts/payment-lifecycle/payments">

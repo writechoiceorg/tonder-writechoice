@@ -1,9 +1,7 @@
 ---
 title: "Refunds"
-description: "Learn how to process refunds for completed transactions, including full and partial refunds, and understand the refund lifecycle."
+'og:description': "Learn how to process refunds for completed transactions, including full and partial refunds, and understand the refund lifecycle."
 ---
-
-## Overview
 
 Refunds allow you to return funds to customers for card transactions. You'll use this when you need to process customer returns, cancellations, or any situation requiring payment reversal. Understanding the refund process is crucial for managing customer relationships and maintaining accurate financial records.
 
@@ -15,71 +13,72 @@ Refunds are only available for card payments. SPEI, OXXO, and Mercado Pago trans
 
 Common scenarios for processing refunds include:
 
-- **Product returns**: Customer returns merchandise within your return policy window
-- **Order cancellations**: Customer cancels before shipment or service delivery
-- **Service disputes**: Issues with service quality or delivery
-- **Duplicate charges**: Accidental double-charging of a customer
-- **Goodwill gestures**: Customer service recovery or compensation
+- Customer returns merchandise within your return policy window.
+- Customer cancels before shipment or service delivery.
+- Issues with service quality or delivery.
+- Accidental double-charging of a customer.
+- Customer service recovery or compensation.
 
 ## Refund Types
 
 Tonder supports two types of refunds:
 
-### Full Refund
+<AccordionGroup>
+<Accordion title="Full Refund">
+A full refund returns the complete transaction amount to the customer. This is appropriate when:
 
-Returns the complete transaction amount to the customer. This is appropriate when:
+- Customer returns all items from an order.
+- Order is completely cancelled.
+- Service is not provided at all.
+</Accordion>
 
-- Customer returns all items from an order
-- Order is completely cancelled
-- Service is not provided at all
+<Accordion title="Partial Refund">
+A partial refund returns only a portion of the original transaction amount. Use this when:
 
-### Partial Refund
+- Customer returns only some items from an order.
+- Applying a discount or credit for service issues.
+- Refunding shipping costs but keeping product charges.
+</Accordion>
+</AccordionGroup>
 
-Returns a portion of the original transaction amount. Use this when:
-
-- Customer returns only some items from an order
-- Applying a discount or credit for service issues
-- Refunding shipping costs but keeping product charges
-
-## Refund Limitations
-
-Be aware of these important limitations:
 
 <Warning>
 **Important refund constraints**
-- Refunds work exclusively with credit and debit card transactions
-- Each transaction can only be refunded once (partial or full)
-- Refunds must be processed within 120 days after payment confirmation
-- The refund amount cannot exceed the original transaction amount
+- Refunds work exclusively with credit and debit card transactions.
+- Each transaction can only be refunded once (partial or full).
+- Refunds must be processed within 120 days after payment confirmation.
+- The refund amount cannot exceed the original transaction amount.
 </Warning>
 
 ## How Refunds Work
 
 The refund process involves several stages:
 
-### 1. Refund Initiation
+<Steps>
+<Step title="Refund Initiation">
+To initiate a refund, you submit a request through the Tonder API with the following required information:
 
-You submit a refund request through the Tonder API, specifying:
+- The original transaction ID.
+- The refund amount (full or partial).
+- The currency (must match the original transaction).
+</Step>
 
-- The original transaction ID
-- The refund amount (full or partial)
-- The currency (must match the original transaction)
-
-### 2. Processing
-
+<Step title="Processing">
 Tonder processes the refund request and communicates with the payment provider. The refund is typically approved immediately, but the actual transfer of funds depends on the customer's bank.
+</Step>
 
-### 3. Settlement
+<Step title="Settlement">
+After processing, the funds are returned to the customer's original payment method. Settlement times vary by card type:
 
-The funds are returned to the customer's original payment method. This typically takes:
-
-- **3-5 business days** for credit cards
-- **5-10 business days** for debit cards
-- Timing may vary depending on the card issuer and banking institution
+- 3-5 business days for credit cards.
+- 5-10 business days for debit cards.
+- Timing may vary depending on the card issuer and banking institution.
+</Step>
+</Steps>
 
 ## Refund Statuses
 
-During the refund lifecycle, you'll encounter these statuses:
+During the refund lifecycle, transactions will progress through various statuses that indicate their current state:
 
 | Status | Description |
 |--------|-------------|
@@ -90,11 +89,13 @@ During the refund lifecycle, you'll encounter these statuses:
 
 ## Processing a Refund
 
-To process a refund, you'll need:
+Before submitting a refund request to the Tonder API, ensure you have the following required information:
 
-1. **Original transaction ID**: The unique identifier from the original payment
-2. **Refund amount**: The amount to refund (can be partial or full)
-3. **Currency**: Must match the original transaction currency
+| Requirement | Description |
+|-------------|-------------|
+| Original transaction ID | The unique identifier from the original payment |
+| Refund amount | The amount to refund (can be partial or full) |
+| Currency | Must match the original transaction currency |
 
 <Tip>
 For implementation details and code examples, see the [Refund a Payment](/direct-integration/guides/refund-a-payment) guide in the Direct Integration section.
@@ -104,51 +105,55 @@ For implementation details and code examples, see the [Refund a Payment](/direct
 
 Follow these recommendations when processing refunds:
 
-1. **Keep detailed records**: Maintain logs of all refund requests and their outcomes
-2. **Communicate with customers**: Inform customers when refunds are processed and expected timeframes
-3. **Validate amounts**: Always ensure refund amounts don't exceed the original transaction
-4. **Track refund IDs**: Store the refund transaction ID for reconciliation and customer service
-5. **Monitor refund patterns**: High refund rates may indicate product or service issues
-6. **Set clear policies**: Establish and communicate refund policies to customers
+- Maintain logs of all refund requests and their outcomes.
+- Inform customers when refunds are processed and expected timeframes.
+- Always ensure refund amounts don't exceed the original transaction.
+- Store the refund transaction ID for reconciliation and customer service.
+- Monitor refund patterns as high rates may indicate product or service issues.
+- Establish and communicate clear refund policies to customers.
 
 ## Common Refund Errors
 
 Understanding common errors helps you handle refunds more effectively:
 
-### Already Refunded
+<AccordionGroup>
+<Accordion title="Already Refunded">
+This error occurs when attempting to refund a transaction that has already been refunded, either partially or fully. Each transaction in Tonder can only be refunded once.
 
-**Error**: Transaction has already been refunded
+To avoid this error, maintain a local record of all refunded transactions in your system. Always check whether a transaction has been previously refunded before initiating a new refund request.
+</Accordion>
 
-**Solution**: Check your records before initiating refunds. Each transaction can only be refunded once.
+<Accordion title="Invalid Amount">
+This error occurs when the refund amount exceeds the original transaction amount. The refund system validates that you cannot refund more than what was originally charged.
 
-### Invalid Amount
+To prevent this error, always validate refund amounts against the original transaction total before submitting requests. Implement proper validation logic in your application to ensure the refund amount is less than or equal to the original payment amount.
+</Accordion>
 
-**Error**: Refund amount exceeds original transaction amount
+<Accordion title="Transaction Not Found">
+This error occurs when the system cannot locate the original transaction or the transaction is not eligible for refunds. This can happen with invalid transaction IDs, non-card payments (SPEI, OXXO, Mercado Pago), transactions older than 120 days, or incomplete transactions.
 
-**Solution**: Validate refund amounts against original transaction totals before submitting requests.
+To resolve this issue, verify the transaction ID is correct and ensure the transaction is a completed card payment within the 120-day refund window. Double-check that you're attempting to refund a card transaction, as other payment methods cannot be refunded through the API.
+</Accordion>
 
-### Transaction Not Found
+<Accordion title="Refund Window Expired">
+This error occurs when attempting to refund a transaction that exceeds the 120-day time limit. Card networks enforce this restriction, and transactions older than this cannot be refunded.
 
-**Error**: Original transaction not found or not refundable
-
-**Solution**: Verify the transaction ID is correct and that the transaction is a completed card payment within the refund window (120 days).
-
-### Refund Window Expired
-
-**Error**: Transaction is too old to be refunded
-
-**Solution**: Process refunds promptly. Transactions older than 120 days cannot be refunded.
+To avoid this error, process refunds promptly when customers request them. Monitor your refund queue regularly and prioritize older transactions that are approaching the 120-day deadline.
+</Accordion>
+</AccordionGroup>
 
 ## Financial Impact
 
-Understanding how refunds affect your financials:
+Refunds have several important impacts on your account's financial standing that you should be aware of:
 
-- **Fees**: Processing fees from the original transaction are typically not refunded
-- **Reserves**: Refunded amounts may be deducted from your available balance
-- **Reporting**: Refunds appear as separate line items in your financial reports
-- **Settlement**: Refunds reduce your net settlement amounts
+- Processing fees from the original transaction are typically not refunded.
+- Refunded amounts may be deducted from your available balance.
+- Refunds appear as separate line items in your financial reports.
+- Refunds reduce your net settlement amounts.
 
 ## Next Steps
+
+Continue exploring the payment lifecycle and financial management with these related topics:
 
 <CardGroup cols={2}>
   <Card title="Payments" href="/guides/core-concepts/payment-lifecycle/payments">
